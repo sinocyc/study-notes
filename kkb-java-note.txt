@@ -1,0 +1,2562 @@
+
+ToDo: Dubbo录播最后两节没看 2020-03-20
+      Kafka录播最后一节没看 2020-03-20
+
+#MyBatis
+1-
+
+#设计模式
+1-七大设计原则；简单工厂、工厂方法、抽象工厂、构建者。
+2-迪米特法则；原型模式，浅拷贝、深拷贝；单例模式，双重检查锁(指令重排)、静态内部类、枚举单例(反射攻击、序列化攻击)。
+
+#Spring
+1-录播
+2-抽象模板、策略模式；分析Spring ioc的流程。
+3-手写spring ioc的v2版本；手写spring ioc的v3版本分析。
+4-手写spring ioc的v3版本；阅读spring ioc源码。
+5-spring循环依赖，三个缓存；aop核心概念；静态代理、动态代理介绍。
+6-JDK和CGLib动态代理的创建和执行流程；spring aop配置标签，十个相关BeanDefinition。
+7-录播
+
+#SpringMVC
+1-录播
+2-分析spring apo中的代理创建、代理执行、事务源码；web项目介绍，servlet、tomcat、写简单web项目。
+3-url-pattern优先级；分析SpringMVC六大组件及流程；适配器模式；手写SpringMVC的v2版本开头。
+4-手写非注解配置方式的SpringMVC；手写注解配置方式的SpringMVC的开头。
+5-手写注解配置方式的SpringMVC；阅读SpringMVC源码。
+
+#MySQL
+1-录播
+2-MySQL架构；
+3-索引；
+4-索引和组合索引的数据结构；ICP索引下推；锁的介绍。
+5-行锁详解；InnoDB内存结构；事务介绍。
+6-InnoDB内存数据落盘分析，redo log；
+7-MVCC；行锁原理；
+8-MySQL性能优化；MySQL集群，主从，读写分离。
+9-分库分表，ShardingJDBC；MySQL课程总结（上）。
+
+#Redis
+1-
+2-
+3-？watch、跳跃表、一致性hash？
+
+------------------------------------------------------------
+
+2020-03-28 Zookeeper live01 应用场景
+配置管理、命名服务、集群管理、DNS服务、Master选举、分布式同步
+2020-03-31 Zookeeper live02 应用场景 源码
+分布式锁、分布式队列（FIFO、分布式屏障）
+
+------------------------------------------------------------
+
+2020-04-11 Netty第1次直播
+手写RPC框架
+
+2020-04-14 Netty第2次直播
+手写Dubbo
+
+2020-04-16 netty第3次直播
+1.Reactor模型
+2.Netty服务端启动源码
+
+2020-04-25 Netty第6次直播
+1.Client的启动源码
+2.Handler的创建
+
+Netty 07
+@Sharable
+ChannelInitializer
+    handlerAdded
+    initChannel
+    removeHandler
+    initMap?
+    创建处理器节点
+
+ChannelHandlerContext
+
+之前讲的定时任务有哪些？可以举个例子吗？
+
+------------------------------------------------------------
+
+2020-04-30 Dubbo 01 系统架构
+ExtensionLoader一个接口一个实例
+SPI注解
+ExtensionFactory
+Container
+Protocol
+
+@Adaptive类
+AdaptiveCompiler只有两种编译方式
+AdaptiveExtensionFactory只有两个工厂
+@Ataptive方法
+Protocol的方法
+Cluster的方法
+若接口名为GoodsOrder则URL参数为xxx://localhost/ooo?goods.order=wechat
+
+------------------------------------------------------------
+
+2020-05-07 Dubbo 02 内核原理、SPI源码解析
+Wrapper 不属于扩展，因为不能单独运行
+Activate group筛选 order顺序 value筛选
+属于扩展类：普通扩展类、Activate
+不属于扩展类：Adaptive、Wrapper
+
+loadDirectory同一个文件名可能存在多个
+
+ServiceConfig
+  protocol=ExtensionLoader.getExtensionLoader().getAdaptiveExtension()
+ExtensionLoader
+getExtensionLoader
+new ExtensionLoader(Class)
+getAdaptiveExtension()
+cachedAdaptiveInstance Holder
+createAdaptiveExtension()
+  getAdaptiveExtensionClass()
+    getExtensionClasses()读取并缓存配置文件中所有类
+    cachedClasses缓存所有扩展类（不包含adaptive和wrapper）
+      loadExtensionClasses()
+        cacheDefaultExtensionName()
+        cachedDefaultName 缓存默认扩展名
+        loadDirectory(,"META-INF/dubbo/internal"等)
+          loadResource()
+          loadClass()
+            findAnnotationName(clazz) 生成扩展名@Extension or 类名前缀
+            cacheAdaptiveClass(clazz)
+            cachedAdaptiveClass adaptive只能有一个
+            cacheWrapperClass(clazz)
+              isWrapperClass()
+            cachedWrapperClasses wrapper可以有多个
+            cacheActivateClass()
+            cachedActivates 使用第一个扩展名为key，缓存的@Activate注解
+            cachedNames()
+            cachedNames 以clazz为key，缓存第一个扩展名name
+            saveInExtensionClass() 缓存
+    createAdaptiveExtensionClass()没有显示定义Adaptive类，则创建一个
+  injectExtension()
+
+------------------------------------------------------------
+
+2020-05-09 Dubbo 03 IoC、AOP、动态编译Compiler
+配置中心，默认使用注册中心替代
+ZooKeeperDynamicConfigurationFactory
+  setTransporter(ZookeeperTransporter)
+#IoC
+ServiceConfig AbstractInterfaceConfig
+  export()
+    checkAndUpdateSubConfigs()检查子配置
+      checkRegistry()
+        registries字段
+        useRegistryForCOnfigIfNecessary()
+          startConfigCenter() 启动配置中心
+            prepareEnvironment() 从配置中心获取动态配置
+              getDynamicConfiguration() 从配置中心获取动态配置
+                ExtensionLoader
+                getExtensionLoader(DynamiconfigurationFactory.class)
+                getExtension("zookeeper") 获取zk的配置工厂类
+                createExtension("zookeeper")
+                  injectExtension(instance)
+                    遍历所有方法 isSetter()
+                    @DisableInject 不是用于注入的setter
+                    参数类型为基本类型的不处理
+                    getSetterProperty(method) 形参名称
+                    AdaptiveExtensionFactory
+                    objectFactory.getExtension(,property) objectFactory工作过程：创建扩展类实例(通过SPI与SPring获取)
+                      遍历factories，SPI与spring容器查找
+                      SpiExtensionFactory.getExtension()
+                        getSupportedExtensions()
+                        ExtensionLoader.getExtensionLoader().getAdaptiveExtension()
+                      SpringExtensionFactory.getExtension()
+                        根据名称从所有spring容器中查找bean
+                        根据类型从所有spring容器中查找bean
+                  获取所有wrapper逐层包装
+ExtensionFactory工作方式有两种：SPI，Spring
+子配置SubConfigs
+AOP------------
+ExtensionLoader.createExtension()
+  遍历cachedWrapperClasses
+  injectExtension(wrapperClass.getConstructor(type).newInstance)包装wrapper并注入extension
+  return wrapper; 返回wrapper包装后的extension
+多个wrapper存放在hashset中，顺序不一定
+动态编译------------
+javassit分析、生成、编辑字节码
+Adaptive方法用到的
+getAdaptiveExtension()
+  getAdaptiveExtensionClass()
+    createAdaptiveExtensionClass()
+      new AdaptiveClassCodeGenerator(type, cachedDefaultName)
+        generate()
+          hasAdaptiveMethod()是否存在@Adaptive的方法
+          StringBuilder.append()生成代码
+      getAdaptiveExtension()Compiler
+      AdaptiveCompiler
+        compile()
+          用户指定的扩展名或获取默认javassistCompiler
+          AbstractCompiler
+          compile()从java代码中找到package和class拼接
+          Class.forName()加载
+          JavassistCompiler
+          doCompiler()使用javassist生成、编译adaptive扩展类
+
+总结：
+loader.getExtension()
+newInstance()
+injectExtension(instance)
+wrapper
+Adaptive方法
+
+------------------------------------------------------------
+
+2020-05-12 Dubbo 04 与Spring整合、服务发布
+与spring整合------------
+dubbo.xsd位置
+DubboNamespaceHandler
+DubboBeanDefinitionParser(beanClass, required)
+  parse(Element,ParserContext,Class) parserContext封装所有dubbo标签的上下文信息
+    1创建并初始化解析对象BeanDefinition
+    2解决id问题：为空 或 重复
+      id.isEmpty()
+        id -> name -> dubbo/interface -> beanClassName
+        parserContext.getRegistry().containsBeanDefinition(id)
+    3将id属性写入解析对象beandefinition和上下文
+      parserConext.getRegistry().registerBeanDefinition(id, beanDefinition)
+      beanDefinition.getPropertyValues().addPropertyValue("id", id)
+    4对特殊标签的特殊处理
+      protocol、service、provider与service、consumer与reference
+      标签优先级；消费者method > 提供者method > reference > service > consumer > provider
+    5对所有标签的普适性处理
+重要接口------------
+Invocation attachment
+Invoker getInterface() invoke()
+  extends Node getUrl()
+Exporter getInvoker() unexport()取消发布
+Directory getInterface() list(Invocation)->List<Invoker>
+  extends Node getUrl()
+  Adaptive规范：参数为URL或参数可获取URL(Invoker、Directory可做参数)
+  RegistryDirectory extends NotifyListener notify() doList(Invocation)->List<Invoker>
+  StaticDirectory 多注册中心列表
+  MockDirectory 降级类列表 extends StaticDirectory
+服务发布------------
+ServiceBean implements ApplicationListener
+  onApplicationEvent(ContextRefreshedEvent)spring容器刷新时触发
+  !isExported()&&!isUnexported()当前service尚未发布，也没有取消发布
+  export()
+    checkAndUpdateSubConfigs()
+    shouldExport()
+      getExport() <dubbo:service>标签的export属性，<dubbo:provider>标签
+    shouldDelay() <dubbo:service>的delay属性
+    doExport()
+      path = interfaceName <dubbo:service>的path属性
+      doExportUrls() 一个注册中心配一个协议就是一个url
+        AbstractInterfaceConfig
+        loadRegistries(boolean provider)加载注册中心（形成标准化url）
+          遍历registries 所有注册中心，多个<dubbo:registry>标签
+            config.getAddress() <dubbo:registry>的adress属性
+            !ServiceConfig.NO_AVAILABLE 不是直连
+            map=new HashMap<>() 创建map存放元数据
+            appendParameters(map,...) 将<dubbo:application>、<dubbo:service>、path属性写入map
+            appendRuntimeParameters(map)
+            UrlUtils.parseUrls(address,map) 一个<dubbo:registry>的address地址解析出多个地址
+            遍历urls
+              URLBuilder.from(url).addParameter().setProtocol().build() 进行格式化zookeeper://zkos:2181 -> registry://zkos:2181?...&registry=zookeeper
+              registryList.add(url) 若提供者需要注册，消费者需要订阅，则记录下url；register、subscribe属性
+        遍历protocols service的所有服务暴露协议
+          URL.buildKey(path, group, version) 写到zk的节点名称
+          getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path) 获取<dubbo:protocol>的contextPath属性，支持自定义协议
+          new ProviderModel()
+          initProviderModel(pathKey, providerModel) PROVIDER_SERVICES.putIfAbsent() 放入provider模型
+          doExportUrlsFor1Protocol(protocolConfig,registryURLs) 使用一个协议将service暴露到所有注册中心
+
+      暴露大步骤：
+        1注册
+        2暴露: url -> invoker -> exporter -> 启动netty暴露
+
+------------------------------------------------------------
+
+2020-05-15 Dubbo 05 服务发布、generic
+服务发布------------
+组装Invoker注册到中心 -> 放入Exporter -> 同步转异步启动Netty
+ServiceBean
+  onApplicationListen()
+ServiceConfig
+  doExportUrlsFor1Protocol(protocolConfig,registryURLs)
+    generic泛化服务/引用
+    map=new HashMap<>()创建并初始化用于存放元数据信息的map
+    appendParameters(map, ...)
+    findConfigedHosts() findConfigedPorts() 获取host、ip生成url
+    new URL(name,host,port,path,map)暴露协议名称、host、port、service、元数据map
+    ConfiguratorFactory.getConfigurator(url).configure(url) 对现有暴露协议进行再配置
+    url.getParameter(SCOPE_KEY) scope属性
+    !SCOPE_NONE.equals(scope)
+      !SCOPE_REMOTE.equals(scope) scope不为remote，则进行本地暴露
+        exportLocal()
+          URLBuilder.from(url).setProtocol(LOCAL_PROTOCOL).setHost().build(0) injvm://
+          protocol.export() 从控制台log复制出Protocol$Adaptive类
+          ProtocolFilterWrapper.export()
+          ProtocolListenerWrapper.export()
+          InjvmExporter.export()
+          exporterMap 集合
+      !SCOPE_LOCAL.equals(scope) scope不为local，则进行远程暴露
+        for(:registryURLs) 遍历所有注册中心
+          LOCAL_PROTOCOL.equals(scope) continue; 若协议为injvm，仅做本地暴露，结束远程暴露
+          PROXY_FACTORY.getInvoker(ref,interfaceClass,registryURL.addParameterAndEncoded()) 使用URL构建invoker
+          new DelegateProviderMetaDataInvoker(invoker, this) 使用当前service配置对invoker进行封装，形成真正用于暴露的invoker
+          protocol.export() Protocol$Adaptive 服务暴露
+          ProtocolFilterWrapper.export()
+          ProtocolListenerWrapper.export()
+          RegistryProtocol.export(invoker)
+            getRegistryUrl(invoker) 从invoker获取注册中心url
+              getParameter()获取url中的egistry属性"zookeeper"
+              setProtocol() removeParameter() 将url的协议替换为"zookeeper"，去掉url中的registry属性
+            getProviderUrl(invoker)从invoker中获取提供者url
+              getParameterAndDecoded(EXPORT_KEY) 获取export属性并解码为string
+            doLocalExport()->ExporterChangeableWrapper 远程暴露
+              ProtocolFilterWrapper.export()
+              ProtocolListenerWrapper.export()
+              DubboProtocol.export()
+                new DubboExporter(invoker,key,exportMap) 生成exporter
+                exporterMap.put(key,exporter) 将exporter存放到exporterMap中，消费者调用请求到来后，首先从这里查找exporter
+                openServer(url) 启动nettyServer
+                  url.etAddress() 获取key ip:port
+                  isServer则为provider
+                  serverMap.put(key, createServer(url)) 一个ip:port对应一个NettyServer
+                  createServer(url)
+                    bind() 从控制台复制出Transporter$Adaptive
+                    NettyTranspoter.bind(url,listener)
+                    new NettyServer()
+                      AbstractServer.doOpen()
+            getRegistry(invoker) 获取注册中心
+              registryFactory.getRegistry() 从控制台log把类RegistryFactory$Adaptive拷出来
+              AbstractRegistryFactory.getRegistry()
+                createRegistry(url) 创建注册中心
+                  new ZookeeperRegistry(url, zookeeperTransporter) extend FailbackRegistry 连接zk，监听连接状态，失败则重连
+                  REGISTRIES.put(key,registry) 放入缓存
+            register(registryUrl,regiteredProviderUrl) 将提供者注册到注册中心
+              registryFactory.getRegistry(registryUrl) 获取注册中心
+              FailbackRegistry.register()
+              ZookeeperRegistry.doRegister()
+                zkClient.create(toUrlPath(url),boolean) 创建zk节点
+        没有注册中心的暴露
+generic------------
+GenericService
+
+------------------------------------------------------------
+
+2020-05-16 Dubbo 06 服务订阅
+主要内容：获取Invoker、动态代理对象
+ReferenceBean:ReferenceConfig:AbstractInterfaceConfig
+  get()
+    init()
+    map=new HashMap<>() 创建并初始化用于构成url的map
+    appendRuntimeParameters(map)
+    ref=createProxy(map) javassist生成的
+      if shouldJvmRefer(map) 处理本地调用
+        shouldJvmRefer(map) 本地or远程调用
+          injvm属性、url属性、scope属性、generic属性
+          getExporter(exporterMap，URL) 本地是否存在要的exporter
+      else 处理远程调用
+        if url url属性，直连
+          遍历提供者地址，将提供者地址写入到urls集合
+        else 提供者来自于注册中心
+          checkRegistry() 检查注册中心
+            useRegistryForConfigIfNecessary() 注册中心做配置中心
+          loadRegistries(false) 获取所有注册中心url
+          从注册中心获取provider url，将提供者url添加到urls
+          将消费者元数据信息添加到注册中心url
+      urls中包含提1直连时的提供者地址、2注册中心url(包含消费者元数据)
+      生成invoker
+      REF_PROTOCOL.refer(interfaceClass,urls.get(0)) 将注册中心构建为invoker 从控制台复制出Protocol$Adaptive
+        doRefer()
+          new RegistryDirectory(type,url)生成动态Directory
+          registry.register()将consumer注册到zk
+            doRegister()
+          directory.buildRouterChain()将所有router添加到directory
+          directory.subscribe()更新invoker列表
+            doSubscribe()
+              处理interface为*的情况、普通情况
+              urls存放所有分类节点下的所有子节点url
+              zkClient.create()configurators、providers、routers
+              addChildListener()添加监听，返回所有子节点列表
+              toUrlsWithEmpty(,,children)至少有empty://...
+                toUrlsWithoutEmpty()将子节点列表url写入到urls集合
+              notify()更新invoker列表
+                doNotify() FailbackRegistry
+                notify()
+                  map.computeIfAbsent()为每个category创建一个list为value，以category为key放入map
+                  categoryList.add(u)
+                  categoryNotified 为当前消费者url创建一个map
+                  listener.notify(categoryList) 更新三个category的子列表
+                    refreshOverrideAndInvoker(providerURLs)
+                      overrideDirectoryUrl()
+                      refreshInvoker()
+                        if(){}若只有一个empty的提供者url，说明当前没有提供者，本次远程调用会被禁止
+                        else oldUrlsInvokerMap=this.urlInvokerMap 保存当前缓存urlInvokerMap
+                        invokerUrls与cachedInvokerUrls赋值
+                        toInvokers(invokerUrls) 将url列表转换为invokerMap，真正的更新
+                          对urls各种检测
+                          mergeUrl(providerUrl)合并url，将动态配置、<dubbo:reference/>、<dubbo:consumer/>中的配置进行合并
+                          this.urlInvokerMap 从缓存中获取指定的invoker，若不存在则创建新的，放入map中
+                          invoker=new InvokerDelegate<>(protocol.refer()) 创建一个invoker的委托对象
+                        routerChain.setInvokers(newInvokers) 将更新过的invokers写入到routerChain，即写入到Directory
+                        this.invokers=toMergeInvokerList(newInvokers) 将更新过的invoker根据group进行分组，每组合并为一个invoker
+                        destroyUnsuedInvokers()从老的缓存oldUrlInvokerMap中将失效的invoker销毁
+                          destroyAllInvokers() 若新的map为空，将所有缓存中的invoker销毁
+                            localUrlInvokerMap=this.urlInvokerMap
+                          deleted.add()比较新老map，将新的里面不存在的invoker放入到deleted结合中
+                          for(:deleted)invoker.destroy()将deleted集合中的invoker销毁
+          invoker=cluster.join(directory)将invoker列表伪装为一个invoker
+      记录最后一个注册中心地址，为了之后代码使用所有url相同的部分数据
+      invoker=CLUSTER.join(StaticDirectory(,invokers))启动后注册中心数量固定
+      metadataReportService 持久化消费者元数据到元数据中心
+      PROXY_FACTORY.getProxy(invoker) 创建消费者代理对象，从控制台复制出ProxyFactory$Adaptive类
+
+------------------------------------------------------------
+
+2020-05-21 Dubbo 07 服务订阅、远程调用
+服务订阅------------
+invoker = cluster.join(directory) 控制台拷贝出Cluster$Adaptive
+  url.getParameter(,"failover")集群容错
+  availablecheck属性 sticky
+  MockCluster.. FailoverCluster.. invoker有降级、容错功能
+远程调用------------
+InvokerInvocationHandler
+invoke()
+  处理本地调用
+  invoker.invoke(RpcInvocation)远程调用
+    MockClusterInvoker
+    invoke()
+      获取mock属性值，降级处理
+      result = this.invoker.invoker(invocation)
+        服务路由
+        获取负载均衡策略
+        FailoverCluster
+        doInvoke()
+          select()负载均衡
+          invoker.invoke()
+            doInvoke()
+              ExchangeClient currentClient
+              currentClient.request() 异步调用请求
+              channel.request()
+              channel.send()
+                channel.writeAndFlush()
+      result = doMockInvoke(invocation, e)
+提供者处理消费者请求------------
+NettyServer
+doOpen()
+  NettyServerHandler
+  channelRead()
+    handler.received()
+      isHearbeatRequest()
+      isHeartbeatResponse()
+      received()
+        getExecutorService()
+        ChannelEventRunnable
+        run()
+          rceived()
+            handleRequest()
+              handler.replay() 异步转同步
+                getInvoker() 
+                  exporterMap.get()
+                  exporter.getInvoker()
+                invoker.invoke() 真正invoker的invoke()
+              channel.send() 返回结果给client
+消费者处理提供者响应------------
+NettyClient
+RegistryDirectory
+  toInvokers()
+    new InvokerDelegate()
+    protocol.refer()
+      new AsyncToSyncInvoker()
+      protocolBindingRefer()
+        new DubboInvoker()
+        getClients()
+          useShareConnect 是否共享连接
+          connections属性 长连接数
+          shareconnections属性 <dubbo:consumer>的
+          获取系统变量中的shareconnections属性
+          getSharedClient() 为每个逻辑连接创建exchangeClient
+            buildReferenceCountExchangeClient()
+              buildReferenceCountExchangeClient()
+                initClient()
+                  Exchangers.connect() 创建NettyClient
+                    getExchanger().connect()
+                      Transporters.connect()
+                        getTransporter.connect() 控制台拷贝Transporter$Adaptive
+                          NettyClient
+                new ReferenceCountExchangeClient()
+                  referenceCount.incrementAndGet() 纯粹client包含几个逻辑连接
+          connections物理连接数、逻辑连接数
+          new ExchangeClient[]
+          initClient() 为每个物理连接创建exchangeClient
+channelRead()
+  handleResponse()
+    DefaultFuture.received()
+      future.doReceived()
+        this.complete() CompletableFuture
+          completeValue()
+          postComplete()
+
+------------------------------------------------------------
+
+2020-05-23 Dubbo 08 服务路由 服务降级 集群容错
+服务路由------------
+RegistryDirectory
+directory.buildRouterChain(); 添加RouterFactory
+  RouterChain
+  buildChain()
+    factory.getRouter(url)
+    initWithRouters() 四个RouterFactory
+subscribe() 读取路由规则
+invoke()远程调用
+list(invocation)  
+  doList(invocation)
+  routerChain.route()
+  router.route()
+    matchWhen()对路由规则中左侧/消费者进行判断
+    thenCondition用于缓存右侧/提供者判断条件
+    matchThen()判断消费者条件
+服务降级------------
+mock=force:return 666 / fail:return 666 / true / default / 降级类全限定名
+doMockInvoke()
+  normalizeMock() 规范化mock的值
+  parseMockValue()
+  getInvoker()
+    getMockObject()
+集群容错------------
+cluster.join() 包装ClusterInvoker
+  invoke()
+FailoverCLusterInvoker
+  doInvoke()
+  checkInvokers() 可能降级
+  invoked 调用过的
+  checkWhetherDestroyed() 可能降级
+  list(invocation) 更新invokre列表
+  select()负载均衡
+  invoked.add(invoker)
+  invoker.invoke()
+FailfastClusterInvoker
+  doInvoke()
+  checkInvokers()
+Failsafe 
+  checkInvokers()
+Failback
+  addFailed() 记录异常并定时重试
+    failTimer
+    retryTimerTask
+      run() Timeout类
+        retryInvoker.invoke()
+        rePut(timeout)
+Forking
+  forks属性
+  selected数量
+  invoker.invoke()
+  ref.offer(result)
+  ref.poll()
+Broadcast
+
+------------------------------------------------------------
+
+2020-05-26 Dubbo live09 负载均衡
+------------
+initLoadBalance()
+  invoked 集合用于重试
+  select()
+    invokers判空
+    sticky属性
+    doSelect()
+      loadbalance.select()
+        doSelect()
+      reselect()
+        reseletInvokers遍历找出所有可以用invoker
+        loadbalance.select(reselectInvokers)
+        遍历selected找出可用的
+        loadbalance.select(reselectInvokers)
+      rInvoker重新选出来的
+random------------
+doSelect()
+  getWeight()获取权重
+  按权重选择的算法，循环减到<0
+  uptime
+  warmup
+  calculateWarmupWeight()
+leastactive------------
+doSelect()
+roundrobin双权重轮询------------
+methodWeightMap双层map
+  内层map：一个方法的所有提供者及其轮询权重
+  weight
+  current
+  lastUpdate
+  increateCurrent()
+  sel()
+  RECYCLE_PERIOD回收期
+  doSelect()
+    选出invoker
+    预热过程weight变化
+    updateLock
+    清除所有失效的invoker
+一致性哈希------------
+
+------------------------------------------------------------
+
+2020-05-28 Kafka live01
+常见应用场景：消息、用户活动跟踪、数据监控、日志聚合、流处理、事件源、日志提交
+Topic
+Partition
+Segment
+Broker
+Producer
+Consumer
+Consumer Group
+  同组消费者不能消费同一个partition，不同消费者可以。
+Replica of partition
+Partition Leader
+  所有读写操作只能发生于Leader分区上
+Partiton Follower
+  主备
+ISR(In-Sync Replicas)
+  AR(Assigned Replicas)
+  OSR(Outof-Sync Replicas)
+  AR = ISR + OSR
+
+------------------------------------------------------------
+
+2020-05-30 Kafka live02
+offset
+commit offset
+rebalance
+__consumer_offsets
+  offsets.topic.replication.factor=N
+Broker Controller
+Zookeeper
+Group Coordinator
+------------
+消息写入算法------------
+HW机制------------
+  HW, HighWater
+  LEO, Log End Offset
+HW截断机制------------
+  Kafka无法保证数据不丢失
+消息发送的可靠性机制------------
+  acks参数，0，1，-1
+  producer的缓存还是可能导致数据丢失
+  可能出现部分Follower重复接收消息的情况。间接解决：消息使用全局id，然后消费的时候去重。
+消费者消费过程解析------------
+Partition Leader选举范围------------
+  unclean.leader.election.enable参数，false，true
+  Broker Controller定时检测OSR是否可以回到ISR
+重复消费问题及解决方案------------
+  同一个consumer重复消费：1）延长自动提交的超时时限；2）自动提交改为手动提交
+  不同的consumer重复消费
+
+------------------------------------------------------------
+
+自动配置------------
+组合注解
+  @SpringBootApplication
+    @SpringBootConfiguration
+    @EnableAutoConfiguration 对自定义组件类的加载注册；对内建的类加载。
+      @Import(AutoConfigurationImportSelector.class) 内建的
+      SpringFactoriesLoader
+        autoconfigure包
+        META-INF/spring.factories
+      @AutoConfigurationPackage 自定义的
+        register()
+    @ComponentScan 1版只扫启动类所在包的子包，2版扫启动包所在包和子包
+      basePackaes, includeFilters, excludeFilters
+  @EnableXxx分析 @Import
+    配置类 @EnableScheduling SchedulingConfiguration
+    选择器 @EnableCaching CachingCongfigurationSelector
+    注册器 @EnableAspectJAutoProxy AspectJAutoProxyRegister
+application.yml加载
+  run()
+    prepareEnvironment()
+    postProcessEnvironment()
+    load()
+    loadDocument()
+SpringBoot与Redis整合
+  ReisAutoConfiguration
+    @ConditionalOnClass()
+    @EnableConfigurationProperties
+MyBatis与SpringBoot整合
+  autoconfigure
+  MyBatisAutoConfiguration
+  @EnableConfigurationProperties
+  @ConditionalOnBean(DataSource.class)
+  @AutoConfigureAfter(DataSOurceAutoConfiguration.class)
+自定义Starter
+  starter命名规范
+  业务类 WrapService
+  配置类 WrapServiceAutoConfiguration 自动配置：创建/配置核心业务实例
+    @Configuration
+    @ConditionalOnClass(WrapService.class)
+    @EnableConfigurationProperties(WrapServiceProperties.class)
+      @ConditionalOnMissingBean
+  配置 WrapServiceProperties
+    @ConfigurationProperties("wrap.service")
+  spring.factories
+  enable属性控制是否启动
+    @ConditionalOnProperty(name="wrap.service.enable", havingValue="true")
+    @ConditionalOnMissingBean保证有一个Bean 必须放在后面，否则报错，因为@Bean有顺序，会导致有2个Bean
+    @ConditionalOnProperty(name="wrap.service.enable", havingValue="true"， matchIfMissing=true) 不配置enable，默认开启的效果
+    @ConditionalOnProperty(name="wrap.service.enable") havingValue，not false，不等于false，默认为true
+  创建测试项目
+
+------------------------------------------------------------
+
+2020-06-04 SpringCloud live01 
+Eureka异地多活------------
+Region、Availability Zone
+  prefer-same-region
+  fetch-remote-regions-registry
+源码------------
+@EnableAutoConfiguration
+starter
+EurekaClientAutoConfiguration
+@Configuration(proxyBeanMethods=false) 用户不可以直接调用@Bean的方法
+@ConditionalOnDiscoveryEnabled
+@EnableConfigurationProperties 标准方式注册bean / value参数直接注册
+  EurekaClientConfigBean
+  EurekaInstanceConfigBean
+RefreshableEurekaClientConfiguration
+  @ConditionalOnRefreshScope
+  EurekaClient
+  @ConditionalOnMissingBean(search=SearchStrategy.CURRENT) 单例，父子容器是否考虑
+  @RefreshScope 可刷新
+  @Lazy 这3个注解
+EurekaClientConfiguration
+  @ConditionalOnMissingRefreshScope @AnyNestedCondition
+InstanceInfo
+  注册到eureka的信息、被其他组件服务发现的信息
+  两个时间戳：
+    setLastDirtyTimestamp() instanceInfo任何信息被修改的时间。实际：在client端被修改的时间。
+    setLastUpdatedTimestamp() 状态被修改时间。实际：在server端被修改的时间。
+  三个状态：
+    setOverriddenStatus() 仅会在 Eureka Server 端被调用，up/down
+    setStatusWithoutDirty() 仅会在 Eureka Server 端被调用，修改status时不修改时间戳
+    setStatus() 设置instance的服务状态，只有当status的状态为up时，其他Client才能从eureka发现该instance。会在Client端被调用。
+  InstnceStatus UP, DOWN 心跳发生异常时自动down, STARTING, OUT_OF_SERVICE 手动改, UNKNOWN 可覆盖状态的初始值
+  equals() 比较instanceId
+Application
+  服务名称相同的所有instance
+  instancesMap <String, InstanceInfo> <instanceId, instanceInfo>
+Applications
+  客户端注册表
+  appNameApplicationsMap <String, Application> <serviceName, application>
+Jersey框架
+  Eureka Client 与 Eureka Srver间的通信，及各个Eureka Server间的通信，使用的是Jersey框架完成的。
+  开源的RESTful框架，功能与SpringMVC很像。不同的是SpringMVC的处理器是Controller，而Jersey的是Resource。
+
+------------------------------------------------------------
+
+2020-06-06 SpringCloud live02
+CloudEurekaClient
+DiscoveryClient
+  获取注册表
+  进行注册
+  初始化定时任务
+    定时更新注册表
+    定时续约
+    定时检测Client更新 RefreshScope
+  BackupRegistry
+  fetchRegistry(false)
+    forceFullRegistryFetch 全量获取(首次) / 增量获取(定时)
+    getApplications() 获取缓存中的注册表
+    getAndStoreFullRegistry() 全量下载
+      通过Jersey提交get请求
+      getRegistryRefreshSingleVipAddress() 指定从哪个下
+      AbstractJerseyEurekaHttpClient
+        getApplicationsInternal("apps/)
+          WebResource
+            get()
+            handle()
+    getAndUpdateDelta(applications) 增量下载
+  fetchRegistryFromBackup()
+    fetch-remote-regions-registry
+    backupRegistryInstance.fetchRegistry()
+  register()
+  initScheduledTasks()
+  register()
+    should-endorce-registration-at-init 强制在初始化时注册，否则在续约时注册
+    通过jersey发送post请求
+  initScheduledTasks()
+    registry-fetch-interval-seconds
+    cache-refresh-executor-exponential-back-off-bound 10 expBackOffBound
+    ScheduledExecutorService
+      schedule
+      TimedSupervisorTask
+
+        expBackOffBound
+        
+        maxDelay = timeoutMillis * expBackOffBound
+        run()
+          delay
+          finally{ scheduler.schedule() } 实现定时
+        CacheRefreshThread
+          refreshRegistry()
+            remoteRegions 更新 
+            fetchRegistry(remoteRegionModified) 如果remoteRegions更新了，就全量获取
+              getAndUpdateDelta(applications)
+                delta=getDelta() 发送请求
+                如果delta为空，说明服务器不允许delta修改
+                updateDelta(delta)
+                  for (Applicaton app : delta.getRegisteredApplications())
+                    for (InstanceInfo instance : app.getInstances())
+                      remoteApps = remoteRegionVsApps.get(instanceRegion)
+                      applications = remoteApps
+                      instance.getActionType() 更新类型 ADD, MODIFIED, DELTED
+                      applications.getRegistereApplications(instance.getAppName()).addInstance(instance)
+                      addInstance()
+                        instances.remove(i)
+                        instances.add(i)
+                      applications.removeApplication(existingApp)
+                getReconcileHashCode()
+                如果reconcileHashCode与delta.getAppsHashCode()不同，说明出现更新丢失
+                reconcileAndLogDifference(delta,reconcileHashCode) 全量下载
+    heartbeat
+      HeartbeatThread
+        renew()
+          sendHeartBeat(appName,id,instanceId) 提交put请求 status overridenstatus
+          register() 如果404没找到，就注册
+          setIsDirtyWithTime()
+
+------------------------------------------------------------
+
+2020-06-09 SpringCloud live03
+定时检测client更新------------
+续约信息、数据中心
+InstanceInfoReplicator
+  instance-info-replication-interval-seconds
+  RateLimiter 限制配置不能变的太频繁 令牌桶算法，看Zuul那一章
+  start() DiscoveryClient中调用
+    instanceInfo.setIsDirty()
+    scheduler.schedule()
+  onDemandUpdate() DiscoveryClient.statusChangeListener中调用
+    scheduler.submit()
+      scheduledPeriodicRef.get()
+      lastPeriodic.cancel()
+      InstanceInfoReplicator.this.run()
+  run()
+    discoveryClient.refreshInstanceInfo()
+      applicationInfoManager.refreshDataCenterInfoIfRequired()
+        DataCenterInfo Netflix,Amazon,MyOwn 放的instanceInfo的额外的数据
+        data-center-info
+        default-address-resolution-order
+        hostname
+        resolveDefaultAddress() / getHostName()
+        updateInstanceInfo(newAddress, newIp)
+      applicationInfoManager.refreshLeaseInfoIfRequired()
+        instanceInfo.getLeaseInfo()
+        LeaseInfo leaseDuration, leaseRenewal
+        instanceInfo.setLeaseInfo()
+    discoveryClient.register()
+    instanceInfo.unsetIsDirty()
+    scheduler.schedule()
+  schedulePeridoicRef.set()
+服务下架------------
+DiscoveryClient
+shutdown()
+  applicationInfoManager.unregisterStatusChangelistener()
+  cacelScheduleTasks()
+    各种定时任务shutdown
+  unregister()
+    cancel()
+      delete请求
+Instance状态修改------------
+ServiceRegistryAutoConfiguration
+ServiceRegistryEndpoint
+  setStatus()
+  EurekaServiceRegistry
+    setStatus()
+      CANCEL_OVERRIDE 状态变成unknown
+      delete请求
+      getEurekaClient.statusUpdate()
+      put请求
+Eureka Server源码解析------------
+从starter开始 factories文件
+EurekaServerAutoConfiguration
+EurekaServerMarkerConfiguration.Marker @EnableEurekaServer启动的
+InstanceRegistry
+PeerEurekaNodes
+处理客户端状态修改请求------------
+InstanceResource jersey resource
+  statusUpdate @PUT @Path("status")
+    registry.getInstanceByAppAndId()
+      registry.get(appName) Map<appName, Map<instanceId, Lease<InstanceInfo>>>
+      isLeaseExpirationEnabled()
+        isSelfPreservationModeEnabled()
+        getNumOfRenewsInLastMin() > numberOf
+      decorateInstanceInfo(lease)
+        lease.getHolder()
+        两个interval
+      for regionNameVSRemoteRegistry.values() 远程region
+        remoteRegistry.getApplication(appName)
+    registry.statusUpdate() PeerAwareInstanceRegistryImpl.statusUpdate()
+      super.statusUpdate() AbstractInstanceRegistry.statusUpdate() 写操作加读锁的问题？？？
+        EurekaMonitors.increment() counter myZoneCounter
+        lease.renew()
+          lastUpdateTImestamp 先计算好下一次发心跳的时间 不同于instanceInfo的lastUpdatedTimestamp
+        info = lease.getHolder() 注册表中的，缓存中的
+        lease.serviceUp()
+        overriddenInstanceStatusMap.put(id, newStatus) 可以被外部修改的状态
+        info.setOverriddenStatus(newStatus)
+        info.setStatusWithoutDirty(newStatus) 没记录dirty时间戳
+        info.setLastDirtyTimestamp(replicaDirtyTimestamp)
+        info.setActionType(ActionType.MODIFIED)
+        recentlyChangedQueue.add(new RecentlyChngeItem(lease))
+        info.setLastUpdatedTimestamp()
+        invalidateCache()
+      replicateToPeers(Action.StatusUpdate) 复制给集群其他server
+        peerEurekaNodes==Empty || isReplication
+        for peerEurekaNodes
+          replicateInstanceActionsToPeers()
+            switch (action)
+              StatusUpdate
+              getInstanceeByAppAndId()
+              node.statusUpdate()
+                batchingDispatcher.process()
+                replicationClient.statusUpdate()
+                put请求
+
+------------------------------------------------------------
+
+2020-06-11 SpringCloud live04
+处理客户端删除override状态请求------------
+ServiceRegistryEndpoint
+EurekaServiceRegistry
+  setStatus()
+  CloudEurekaClient
+    deleteStatusOverride()
+InstanceResource
+  deleteStatusUpdate()
+    registry.getInstanceByAppAndId()
+    newStatusValue UNKNOWN
+    registry.deleteStatusOverride()
+      PeerAwareInstanceRegistryImpl
+      deleteStatusOverride()
+        lease.renew()
+        overriddenInstanceStatusMap.remove()
+        info.setOverridenStatus()
+        info.setStatusWithoutDirty()
+      deleteStatusOverride
+扩展问题------------
+defaultZone配置与url
+  Server端可以不配置
+处理客户端注册请求------------
+Consul是CP的
+注册请求有3种场景：注册；定时续约时；配置文件续约信息改变，提交注册请求
+ApplicationResource
+  addInstance()
+    validate字段
+    registry.register() PeerAwareInstanceRegistryImpl
+      leaseDuration lease-expiration-duration-in-secs
+      sper.register()
+        Map<String, Lease<InstanceInfo>> gMap
+        existingLease = gMap.get() 配置更新也会触发注册，所以可能不为空
+        existingLastDirtyTimestamp > registrationLastDirtyTimestamp 可能存在先提交的请求晚到达
+        expectedNumberOfClientsSendingRenews + 1 自我保护相关配置
+        updateRenewsPerMinThreshold() 每分钟续约阈值
+          expectedClientRenewalIntervalSeconds
+          renewalPercentThreshold
+        new Lease()
+        lease.setServiceUpTimestamp()
+        gMap.put(registrant.getId(), lease) 注册
+        recentRegisteredQueue.add()
+        overriddenInstanceStatusMap 只可能是3种Up,OutOfService,Down
+        registrant.setOverriddenStatus() 缓存的优先级高
+        getOverriddenInstanceStatus(registrant, existingLease, isReplication) 计算状态
+          getInstanceInfoOverrideRule() PeerAwareInstanceRegistryImpl
+          rule.apply().status() FirstMatchWinsCompositeRule
+            DownOrStartingRule down和starting不用确认
+            OverrideExistingRule
+              overridden = statusOverrides.get(id) 用户指定优先级高
+              ASG status 亚马逊云相关
+            LeaseExistsRule
+              缓存的，非复制的，up或outOfService
+              否则，NOT_MATCH
+          defaultRule.apply() AlwaysMatchInstanceStatusRule
+            复制，所以都相信
+        registrant.setStatusWIthoutDirty() 修改status的值，算出来的
+        lease.serviceUp()
+        registrant.setActionType(ADDED)
+        recentlyChangedQueue.add()
+        registrant.setLastUpdatedTimestamp()
+      replicateToPeers()
+        PeerEurekaNode.register()
+扩展问题------------
+fetch-remote-region-registry
+需要额外配置，需要基础网络支持。
+
+------------------------------------------------------------
+
+2020-060-13
+Spring Cloud live05
+-处理客户端续约请求------------
+InstanceResource
+  renewLease() PeerAwareInstanceRegistryImpl
+    register()
+    renew()
+      node.heartbeat()
+        replicationClient.sendHearBeat()
+          提交post请求
+  registry.renew() AbstractInstanceRegistry
+    getOverriddenInstanceStatus()
+    计算结果是NKNOWN 说明删除了 返回false，不接受心跳 第一次注册状态不会放入map
+    instanceInfo.setStatusWithoutDirty() 更新status
+    leaseToRenew.renew()
+  过程中没有修改overriddenStatus的值
+  shouldSyncWhenTimestampDiffers() dirty时间戳不一样时，是否需要同步，overriddenStatus相关
+  validateDirtyTimestamp()
+    缓存的和外来的dirty时间戳比较
+    外来 > 缓存 返回404 状态更新丢失
+    缓存 > 外来 非复制，返回ok；是复制，返回409 冲突 附加响应体
+  storeOverriddenStatusIfRequired() 
+    overriddenInstanceStatusMap 放入overrideStatus
+    instanceInfo.setOverriddenStatus()
+-处理客户端下架请求------------
+  cancelLease()
+    registry.cancel()
+      super.cancel()
+        internalCancel()
+          gMap.remove()* lease信息从注册表删掉
+          overriddenInstanceStatusMap.remove()*
+          leaseToCancel.cancel()
+          instanceInfo.setActionType(DELETE)
+          recentlyChangeQueue.add()*
+          setLastUpdatedTimestamp()
+      replicateToPeers()
+      updateRenew...
+-处理客户端全下载请求------------
+ApplicationsResource
+  getContainers() 全量获取
+    shouldAllowAccess(remoteRegionRequired)  
+      同步空等待时间判断
+      remoteRegionRegistry 准备好才可以服务
+    cacheKey = new Key(Applications, )
+    resonseCache.get(cacheKey)
+    getValue(key, shouldUseReadOnlyResonseCache) ResponseCacheImpl
+      readOnlyCacheMap.get(key) 定时同步任务
+      readWriteCaacheMap.get(key) 会过期 初始化
+      ResponseCacheImpl()
+        generatePayload()
+          key.getEntityType()
+          case Application
+            ALL_APPS 全量
+            getPayLoad()
+            registry.getApplicationsFromMultipleRegions() 处理本地 将注册表变成了applications
+              decorateInstanceInfo(lease)
+            remoteRegions 处理远程 
+              regionNameVSRemoteRegistry.get(remoteRegion)
+              shouldFetchFromRemoteRegistry()
+              合并到本地applications
+        timer.schedule()
+          getCacheUpdateTask() 
+      readOnly定时从readWrite同步 集合迭代稳定性(读) 是共享的，存在并发访问，是个集合
+-处理客户端增量下载请求------------
+ApplicationsResource
+  shouldDisableDelta()
+  cacheKey = new Key()
+  getValue()
+  ResponseCacheImpl()
+    generatePayload()
+    ALL_APPS_DELTA
+    registry.getApplication
+      write.lock()* 
+      recentlyChangedQueue.iterator()
+      app.addInstance(new InstanceInfo())
+      remoteRegions 处理远程
+      shouldFetchFromRemoteRegistry() 能否远程访问
+        remote-region-app-whitelist
+        config.getRemoteRegionAppWhitelist()
+-锁的问题------------
+AbstractInstanceRegistry
+read.lock() 
+  register()
+  statusUpdate()
+  deleteStatus()
+  internalCancel()
+  我在执行写操作的时候，你不能加写锁
+没有锁
+  renew()
+  全量下载
+write.lock()
+  增量下载
+读写锁反着加
+  registry
+  recentlyChangedQueue
+  心跳操作最频繁，对registry的读操作频繁
+  增量里没有操作registry
+
+------------------------------------------------------------
+
+2020-06-14
+Spring Cloud live06
+-回顾--
+overridden status 与 status
+读写锁
+-定时清除过期Client--
+EurekaServerAutoConfiguration
+另起的线程
+  postInit()
+    evictionTaskRef.get().cancel()
+    evictionTimer.schedule() 重复任务
+    eviction-interval-timer-in-ms
+    lastExecutionNanosRef
+    getCompensationTimeMs() 补偿时间
+    evict() 
+      isLeaseExpirationEnabled()
+      lease.isExpired() 过期判断
+      expiredLeases.add(lease)
+      getLocalRegistrySize() instanceInfo数量
+      internalCancel()
+-OpenFeign与Ribbon--
+-重要------------
+@EnableFeignClients
+  basePackages / value
+  basePackageClasses
+  defaultConfiguration
+  clients 优先级比basePackages等高
+@FeignClient
+  value / name / serviceId 微服务名称，必填，带可选前缀
+  contextId 优先级比name高
+  qualifier byName注入
+  url 直接指定要访问的主机，不通过负载均衡
+  decode404 
+  configuration 单独对这一个feign client的配置
+  fallbackFactory
+  path 替换RequestMapping
+  primary 定义Bean为primary
+FeignClientSpecification 规范
+  name
+  configuration
+BeanDefinition
+BeanDefinitionRegistry
+FeignContext
+  contexts Map<String, AnnotationConfigApplicationContext> 微服务名称，上下文子容器
+  configurations Map<String, C> 两类configuration
+-feign client创建------------
+FeiginClientsRegistrar
+  registerBeanDefinitions()
+    registerDefaultConfiguration()
+      AnnotaionMetadata
+      getAnnotationAttributes()
+      hasEnclosingClass() 是否顶层类
+      registerClientConfiguration()
+        Builder BeanDefinition FeignClientSpecification FeignClient
+        BeanDefinitionRegistry
+    registerFeignClients()
+
+------------------------------------------------------------
+
+2020-06-18
+Spring Cloud live07
+FeignClientsRegistrar
+  registerDefultConfiguration()
+    registerClientConfiguration()
+    registry.registerBeanDefinition() IoC容器
+      hasBeanCreationStarted()
+      beanDefinitionMap.put()
+      beanDefinitionNames迭代稳定性 volatile synchronized
+      对beanDefinitionMap的访问
+      removeManualSIngletonName()
+        updateManualSingletonNames()
+  registerFeignClients() 3件事
+    1.扫描FeignClient
+    2.加载单个FeignClient的configuration
+    3.FeignClient的工厂Bean
+    clients
+    getBasePackages()
+    candidateComponents
+    规范类名
+    AnnotatedBeanDefinition
+    getClientName() 微服务名称
+    registerClientConfiguration()
+    registerFeignClient()
+      FeignClientFactoryBean 的 beanDefinition
+-完成自动配置------------
+FeignAutoConfiguration
+  feignContext()
+  两个map contexts configurations
+-生成FeignClient------------
+FeignClientFactoryBean
+  getObject()
+  getTarget()
+    FeignBuilder builder = feign(context)
+      get(conteext, Feign.Builder.class)
+        context.getInstance(this.contextId, type) 找到子容器
+          contextId 微服务名称(FeignClient的名称)
+          getContext() 双重检测锁
+          context.getBean()
+    this.url
+    cleanPath()
+    loadBalance()
+    client = getOptional(context, Client.class)
+    LoadBalancerFeignClient
+    FeignBlockingLoadBalancer
+    get(context, Targeter.class)
+    targeter.target()
+      feign.target()
+      build().newInstance() ReflectiveFeign
+          metadata = 方法元数据
+          for metadata
+            result.put(方法名， 处理器)
+        Util.isDefault()
+        SYNTHETIC 编译器生成的。内部类前面有，表示可以访问外部类的private
+        factory.create()
+        invoke()
+          dispatch.get(method).invoke()
+            client.execute() LoadBalancer / 
+              convertResponse() 发送请求
+              executeWithBalancer()
+              submit()
+              selectServer()
+              lb.chooseServer()
+                rule.choose(key)
+                RoundRobinRule
+                  choose()
+                    getReachableServers()
+                    getAllServers()
+                RandomRule
+                  choose(lb, key)
+                    chooseRandomInt()
+                RetryRule
+                  choose()
+                    subRule
+                    maxRetryMills
+                BestAvailableRule
+                  choose()
+                    loadBalancerStats
+                AvailabilityFilteringRule
+                  choose()
+                    roundRobinRule.choose(key)
+                    predicate.apply()
+                      getLBStats()
+                      shouldSkipServer()
+                    super.choose(key) PredicateBaseRule
+                      getPredicate().chooseRoundRobinAfterFiltering()
+                        getEligibleServers()
+                        incrementAndGetModulo()
+              randomChooseZone()
+              zone....chooseServer()
+
+------------------------------------------------------------
+
+2020-06-20
+Elastic Search live01
+-课程安排
+es 4节
+rocketMQ 3节
+k8s 10节
+项目 秒杀 唯品会 
+-
+如何解决大规模数据检索问题？
+  自己设计（elastic search特点）
+    数据内存(放入内存)
+    压缩存储
+    索引
+    多线程
+    顺序存储(磁盘)
+  elastic search
+    分布式搜索引擎，性能及其优秀，海量数据检索能力，达到ms级别
+    heap一个节点内存30G
+1.什么是全文检索？
+  结构化数据
+  非结构化数据（全文数据）
+  全文检索
+    概念：对非结构化数据/结构化数据 建立 索引，再对索引进行搜索 文档（数据）的过程就叫做全文检索（full text search)
+    文档矩阵模型
+    索引：就是一个词语，这个词语是不可再分的词语，把索引叫做索引单词
+    文档：就是数据，类似于mysql一行数据，mysql一行数据就是一个文档
+2.搜索算法问题
+    1.顺序扫描法
+      1）词典
+      2）词典没有目录 --- 查询一个词语，只能从第一页开始查询，一页一页的查询，直到查询到为止
+    2.倒排索引法
+      1）词典
+      2）有目录 --- 查询一个词语，先查询目录，根据目录定位词语所在位置，直接找到即可。
+      反向索引法 例子：title -> id
+3.数据库可以进行模糊查询，进行数据检索，是否可以使用数据库进行全文检索？
+  模糊查询
+    SELECT * FROM table WHERE title like '%静夜思%'
+    问题
+      1.全表扫描 -- 速度非常慢
+      2.字段中所有的内容都需要去匹配，直到匹配成功为止
+      3.全文检索：分词问题
+        %静夜思_% 无法匹配任何一个结果
+      4.like 查询 不走索引
+全文检索场景
+  搜索引擎
+  站内搜索
+  文件系统搜索
+全文检索相关技术
+  1.Lucene 底层
+  2.Solr
+  3.ElasticSearch
+es与solr比较
+  已有数据搜索，静态数据
+    solr 快于 es
+  实时建立索引时，实时数据
+    es 快于 solr
+  数据量增加
+    es 快于 solr
+全文检索流程
+  1.索引库（数据）从哪儿来的？如何创建的？
+    数据从索引库中来的，搜索是从索引库中进行关键词的匹配查询，进行全文检索。
+  2.如何实现关键词检索？
+    倒排索引：根据索引，查询文档
+  索引库创建过程：深入裂解索引库数据结构（分析索引库建立流程）
+    网页（搜索引擎），数据库（站内搜索），文件系统，手动录入
+    数据采集
+    数据建模：把非结构化数据，变成结构化数据
+    把建模好的数据变成document文档数据
+      Document：JavaBean封装数据，Java对象
+    Document文档对象
+      Document 对象：字段类型
+        TextField --- 字符类型，可以分词
+        StringField --- 字符类型，不可以分词
+        LongField...
+    建立索引库结构  去掉停用词汇：符号，副词（的，啊，了，也，是） 不会在索引库出现
+      1.根据分词器对文档内容进行分词，建立索引
+      2.对文档进行存储
+    索引库：索引词典、文档
+    把索引词典、文档对象写入到es索引库中
+  索引库中数据，如何进行关键词匹配搜索？
+    索引库：关键词 -> 倒排链表 -> 文档
+    分词 IK分词器进行分词
+    跟索引单词进行匹配搜索 SUCCESS
+问题解答
+  得分机制
+    得分高（人为设置，相关度高）
+  ES是CP
+  ES不适合做业务处理
+
+------------------------------------------------------------
+
+2020-06-22
+-ES
+elasticsearch：高可扩展性，分布式的搜索引擎（服务），也可以被用来做一些简单海量数据存储，以及数据分析。
+特点：一个master对应一群node节点。
+  es底层使用Lucene，屏蔽了Lucene开发的复杂性，同时解决了海量数据存储，海量数据管理的难题。
+为什么要使用ES？
+ES有什么能力？
+  分布式实时文件存储
+  实时分析的分布式搜索引擎
+  扩展
+使用场景
+  网站搜索、日志分析 ELK、数据预警、数据分析
+ES架构
+  Gateway LocalFileSystem
+  Distributed Lucene Directory
+  IndexModule SearchModule Mapping
+  Discovery Scripting 3rd 
+  Transport
+  RESTful Style API
+ES集群架构
+  空集群：es是分布式架构集群网络（多台服务节点），此时只启动一个服务，因此这个也叫做集群，只不过叫做空集群。
+  集群状态：
+    1.黄色 表示集群可用，但是集群处于不健康状态（亚健康），因为没有节点来存储副本数据
+    2.红色 表示集群不可用
+    3.绿色 表示集群可用，非常健康
+  ES存储方式：
+    采用分片存储方式，把数据分块存储，这些数据块均衡分布在每一个节点中，分担服务器数据读写压力
+    创建索引库：
+      默认创建 5个 primary shard 主分片优先存储，保证集群可用
+              5个 replica shard
+    number_of_shards 配置主分片数量
+    number_of_replicas 配置副本分片数量
+  ES集群结构 --- 数据存储特点
+    cluster_name
+    master node node 心跳
+    从节点也可以进行写入操作
+  特点
+    1.一个es集群由master，slave节点组成，主从结构
+      一个集群只能有一个master
+      一个master对应一群node
+    2.master节点功能
+      维护所有node节点状态（集群状态）
+      slave node节点越多，master节点维护数据越多，性能相应下降
+      注意：slave节点过多，导致master节点负担过重，导致整个集群性能下降。master节点维护多少node，是由相应硬件服务环境决定
+  ES集群存储
+    1.es采用分片方式存储数据
+    2.分片都均衡的分布在每一个node节点
+    3.主分片不能和自己的副本分片存储在同一个节点
+    4.主分片可以进行读写操作，保证集群对外提供服务
+  问题：只有一个master，单节点是否会成为集群性能瓶颈？
+    数据存储主要看分片，主分片分布在主、从节点中，因此从节点也具有读写能力，分担每一个服务器读写
+  集群特点说明：
+    1.五角星 主节点（master节点）
+    2.圆 副本节点（slave节点，node节点）
+  主分片/副本分片：
+    1.边框比较粗，主分片（primary shard）
+    2.边框比较细，副本分片（replica shard）
+  节点类型：
+    1.master节点
+      维护集群状态
+    2.数据节点
+      存储数据（索引）
+    3.协调节点
+      根据路由算法，把请求转发给相应的分片进行处理。
+  节点类型：配置
+    1.master
+      node.master: true --- 具有参加选举成为master的候选节点，true是默认值
+      node.data: true --- 既可以作为master节点，也可以存储数据，true是默认值
+    2.数据节点
+      node.master: false
+      node.data: true --- 只能存储数据，不能参与选举master
+    3.协调节点
+      每一个节点都可以作为协调节点
+  注意：每一个节点默认具有3种身份角色（master候选，数据存储，协调节点）
+  思考问题：集群规模越来越大，数据规模越来越大，node节点越来越多，为了提高集群的性能，如何去思考？
+    让节点功能单一化，只做一件事？？？
+  部落节点 多个集群时
+核心概念
+  Index - Database
+  Type es中一个索引库只能允许有一张表（一个type） - Table 
+  Document 索引库中一条数据 - Row 
+  ES - 关系数据库
+  字段Field - 数据列Column 
+  映像Mapping 是否分词、索引、存储、字段类型 - 模式Schema 字段长度、类型
+API
+  /index/type/documentId
+  _update
+  _search
+  highlight
+内置分词器
+  standard
+  simple
+  whitespace
+  stop 去掉语气词
+  keyword 不分词
+IK分词器 ik_max_word
+  extra_main.dic 扩展词典
+  extra_stopword.dic 扩展停用词
+问题解答：ik_max_word在哪配置
+  mapping中字段类型指定为 ik_max_word
+
+------------------------------------------------------------
+
+2020-06-24
+-IK分词器底层数据结构及原理（了解）
+原理：数据结构 -- 把词语进行树化（二叉树）类似与Trie树
+  内部集成来27w个词语，内部有一个词典
+-ES故障转移
+场景：
+  1.节点宕机，把分片进行重新负载均衡分配
+  2.节点恢复，又会对分片进行重新分配
+ES存储特点
+  为了分担服务器的压力，ES采用非常巧妙的设计原理，采用分片方式存储数据，然后把分片均衡存储在每一个物理机中，实际上这样方式，就相当于负载均衡（请求最终发送给分片，因此请求均衡分布在每一个节点中）
+  1.分布式ES集群：主分片数量一旦确定，无法更改（在企业中，主分片数量一开始就必须规划好），如果必须更新，只有重新创建索引库
+  2.副本分片理论上可以进行无限制扩容，但是实际情况需要考虑master节点能否维护庞大数量的分片，如果分片太多，超过了master承载能力，反而会导致性能下降，同时也需注意，物理内存，CPU，IO资源限制分片数量
+  3.一个文档（document）只能存储在一个分片，不能分散存储
+  4.主分片数量确定了存储容量，而副本分片数据只是主分片数据拷贝。
+  5.主分片理论上可以存储无限制大小的数据，但是一个分片如果太大，在读取数据，故障转移导致性能下降。一般情况下，一个分片最大设置 50G
+  6.极限分片：一个机器存储一个分片。（一个shard独占机器CPU，内存，IO）
+总结：
+  1.副本分片作用
+    数据备份，防止数据丢失
+    可以提供读的能力，分担服务器压力
+  2.分片是否具有独立索引能力
+    一个分片就是一个完整的索引库，相当于对数据进行分块存储，每一个块都是一个完整的数据库，提供了数据的读写能力。
+  3.主分片挂掉
+    副本分片变成主分片
+-ES分片横向扩容
+问题：构建ES搜索集群后，并发访问压力越来越大，数据量越来越大？
+案例：2个节点，2 primary shard，2 replica shard
+  1）扩容一：极限分片方法，一个分片一个服务器
+    4个服务器
+    每一个分片：独占CPU，IO资源。性能会有一定提升。
+  2）并发访问量进一步扩大，如何对上面的服务进一步扩容？
+    解决方案：对副本分片进行扩容，采用极限分片方法。
+-ES底层索引存储结构
+ES分片存储结构（shard --> segment --> 索引）
+  内存：索引
+  磁盘：词典、文档list
+问题：
+  1.如何保证索引数据不丢失？
+  2.segment是如何进行查询的？（结果聚合）
+  3.索引在内存，如何对索引进行CRUD？
+  4.如何实现近实时的搜索？
+  注意：索引一旦写入磁盘（内存），就不可更改
+  考虑因素：
+    1）数据无需改变，就可以防止并发修改，不需要加锁，不需要担心多个线程同时写索引库，保护索引库数据安全性
+    2）防止索引库，索引被频繁的修改，写入，浪费性能，占用IO资源
+    3）把索引读入内存，索引不能被改变，索引一直驻留在内存，搜索时只需要命中内存索引即可，提升搜索效率
+  问题1:索引不能被改变，索引在sement中进行存储，相当于是segment也不能改变，如何实现CRUD？
+    1）添加 --- 直接添加一个新的segment
+    2）删除 --- 不是真正的删除，而是在一个commit point文件中记录删除的文档ID，标记删除。等到segment合并后再执行删除。
+    3）更新 --- 先删除，再添加
+    4）查询 --- 从多个段中查询，把查询到结果进行合并
+  文档添加操作
+    在commit之前就可以搜索searchable
+    问题：每次添加都会创建一个段，时间长了，段就会非常庞大？导致难以维护？（段爆炸）
+      使用segment段合并。添加索引后，发现索引库反而有时候会变小。
+  段更新操作
+    标记删除，合并，真正删除
+    文档的version
+  查询合并结果
+  实现近实时搜索
+    刚添加，立马就可以被搜索
+-ES选举机制
+node.master = true
+discovery.zen.ping_timeout: 3s
+discovery.zen.minimum_master_nodes: 2
+discovery.zen.join_timeout: 10s
+-ES近实时搜索
+
+-ES数据恢复
+  当节点宕机后，进行重新启动时，进行数据恢复
+-故障探查
+  master会ping其他node
+  node会ping master
+  ping_interval 1s
+  ping_timeout 30s
+  pint_retries 3
+-脑裂现象
+  master无法发现其他节点
+  node节点也无法发现master节点
+  此时将会发生重新选举现象，重新选举出一个master，那么此时这个集群会有多个master，就出现了脑裂现象。
+解决方案：
+  设置一个选举条件：当前集群网络红节点数量是否 >= 集群候选maser数量/2+1，如果满足条件就可以参与选举，否则无法进行重新选举，而且取消master身份
+  3/2+1=2（防止脑裂数字）
+-文档路由原理
+路由计算公式：
+  shard  = hash(routing)%number_of_primary_shards
+  1）hash es提供hash计算算法
+  2）routing 
+    _id 默认文档id，默认routing = _id
+    自定义：/user/doc/11?routing=12
+  3）number_of_primary_shards 主分片的数量
+流程：
+  1.接受请求，此节点将会立马切换为协调节点
+  2.协调节点将会进行计算：计算应该操作哪个分片
+问题：为什么主分片数量一旦确定，不能更改？
+  根据路由算法，发现主分片数量不能更改，一旦更改，就会导致原先的数据查询不到了。
+-几个实战中的问题
+1.多大集群规模？公司到底需要多少个服务器？
+2.设置多少个主分片？
+3.设置多少个副本分片？
+考虑因素：
+  1.当前公司数据规模：数据量有多大
+  2.数据增量
+  3.服务器配置（x86 32G 2T）
+ES性能因素：
+  1.es heap内存：最大堆内存设置为 30G
+  2.单个分片最大可以存储：30 ～ 50G，如果超过50G，性能急剧下降
+数据推断：
+  数据规模：10TB
+    how many primary shard = 10TB / 50GB = 205 primary shard
+    服务器数量 10TB / 2TB = 5+1 = 6台服务器
+es经验秘籍：
+  es heap堆内存：30G
+  每一个G堆内存：20～25个分片
+  30G堆内存：600～750分片
+-问题解答
+查询时会扫描每一个分片，与写入不同，与路由没关系了
+-防止数据丢失
+memory buffer -> 1s refresh -> file system cache (可被搜索) -> 30min flush -> disk
+translog ->每次index、delete、update、bulk请求都落盘一次
+
+------------------------------------------------------------
+
+2020-06-28 ELK
+1.分布式拆分 -- 根据业务进行拆分
+2.soa面向服务架构 -- 服务化拆分
+3.微服务架构 -- 函数化拆分
+数据分析：
+  ELK 一周 数据统计、聚合分析（echarts图形化报表）
+    elasticsearch 存储日志数据
+    logstash 收集日志
+    Kibana UI视图
+  hadoop 一个月 推荐系统、大数据
+Elastic Stack
+Logstash
+  基本语法
+    ./logstash -e 'input{ stdin{} } output{ stdout{} }'
+  指定输出格式为json
+    ./logstash -e 'input{ stdin{} } output{ stdout{codec => json} }'
+  注意：输入输出基于事件机制，输入会车后触发标准输出事件，此时就会把输入的数据以某种方式进行输出
+  logstash、es、kibana 版本必须一致
+  input -> stdin{} -> Pipeline(filter) -> stdout() -> output
+  思考问题：
+    1.标准输入：能否从服务中读取数据进行输入到管道，能否从数据库中读取数据输入管道
+      当然可以 redis kafka mysql tcp http
+    2.标准输出：能否直接把数据输出到es，mysq，redis，kafka...中进行存储？
+      当然可以 redis ...
+  顶部插件：input output
+  input {
+    //子插件
+    stdin{
+      属性 => value
+    }
+  }
+  output {
+    elasticsearch{
+      hosts => value
+      index => value
+      path =>value
+    }
+
+    stdout {
+      codec => value
+    }
+  }
+  输出到es
+    ./logstash -e 'input{ stdin{} } output{ elasticsearch{ hosts => ["192.168.66.66:9200"] } stdout{ } }'
+  把数据输入到es中，同时指定索引库名字
+    ./logstash -e 'input{ stdin{} } output{ elasticsearch{ hosts => ["192.168.66.66:9200"] index => "test001" } stdout{ } }'
+  配置文件
+    input{
+      stdin{}
+    }
+    output{
+      elasticsearch{
+        hosts => ["192.168.66.66:9200"]
+        index => "test002"
+      }
+      stdout{
+        codec => json
+      }
+    }
+    启动指令
+      bin/logstash -f config/logstash-simple-001.conf
+  文件日志
+    input{
+      file{
+        path => "/root/supergo.log"
+        type => "super"
+        start_position => "beginning"
+      }
+    }
+    output{
+      elasticsearch{
+        hosts => ["192.168.66.66:9200"]
+        index => "super-%{+yyyy.MM.dd}"
+      }
+      stdout{
+        codec => json
+      }
+    }
+    注意：通过file插件从日志文件中读取数据，再把数据输入到elasticsearch
+    start_position 日志读取位点，记录上次日志读取位置。读取日志有2中顺序，一个是从beginning开始读取。一个是从end开始读取。
+  多个文件
+    input{
+      file{
+        path => "/root/supergo.log"
+        type => "super"
+        start_position => "beginning"
+      }
+      file{
+        path => "/var/log/boot.log"
+        type => "boot"
+        start_position => "end"
+      }
+    }
+    output{
+      if [type] == "super"{
+        elasticsearch{
+          hosts => ["192.168.66.66:9200"]
+          index => "super-%{+yyyy.MM.dd}"
+        }
+      }
+      if [type] == "boot"{
+        elasticsearch{
+          hosts => ["192.168.66.66:9200"]
+          index => "boot-%{+yyyy.MM.dd}"
+        }
+      }
+      stdout{
+        codec => json
+      }
+    }
+    bin/logstash -f config/logstash-simple-003.conf
+  收集项目日志
+    input{
+      tcp{
+        port => 9601
+        codec => json
+      }
+    }
+    output{
+      elasticsearch{
+        hosts => ["192.168.66.66:9200"]
+          index => "project-%{+yyyy.MM.dd}"
+      }
+      stdout{ }
+    }
+  Nginx日志
+    定义Nginx日志格式为json格式，定义json格式输出字段
+      access_log log/access.log log_json;
+    input{
+      file{
+        path => "/usr/local/src/nginx/logs/access.log"
+        codec => json
+        start_position => "beginning"
+      }
+    }
+    output{
+      elasticsearch{
+        hosts => ["192.168.66.66:9200"]
+        index => "nginx-log-%{+yyyy.MM.dd}"
+      }
+      stdout{
+        codec => json
+      }
+    }
+    json格式，可以直接将json的key对应到kibana的字段
+Kibana
+  配置
+  Dev Tools, Management, Visualize, Dashboard, Discover
+进阶：大流量数据 -> 使用kafka过滤 -> logstash
+
+------------------------------------------------------------
+
+2020-06-30 RocketMQ live01 mq重要作用、应用场景、选型；RocketMQ架构原理；接收及发送消息模型
+大纲 3节课
+  1.RocketMQ基础知识
+    1.mq在项目中重要作用
+    2.mq应用场景
+    3.RocketMQ存储结构
+    4.RocketMQ网络架构（master，broker）
+    5.RocketMQ核心组件
+  2.
+    1.发送消息模型（负载均衡源码）
+    2.接收消息模型（负载均衡源码）
+    3.发送丢失问题（代码演示）
+    4.消息存储原理
+  3.
+    1.顺序消息（源码）
+    2.事务消息（源码）
+    3.消息存储（源码）
+    4.重复消息
+    5.保证消息100%不丢失
+    6.半消息机制
+前置知识
+  链式调用
+    互联网架构：分布式、soa架构、微服务架构（function拆分模式）
+  木桶理论
+    链式调用：某一个服务出现阻塞，导致整个服务不可用雪崩效应
+    产生原因：请求同步阻塞
+    解决：异步解耦合
+    服务解耦：架构吞吐能力大幅度提升
+    注意：读不能使用异步操作，写可以使用异步操作
+  MQ引入
+MQ作用
+MQ场景/作用
+  1.异步解耦
+    注册->发邮件->发短信
+    订单->库存
+  2.流量削峰
+  思考：小厂、单体架构，分布式架构（blockingQueue,disrutorQeue,RedisQueue...)
+    日志处理
+    消息通讯
+  3.最终消息一致性（RocketMQ半消息机制）
+    消息和本地事务
+MQ对比
+  RabbitMQ延时很低，主从架构
+  Kafka专用于日志
+  RocketMQ消息堆积能力好
+RocketMQ Kafka区别？
+  RocketMQ支持大量topic主题，性能基本不会下降。Kafka如果出现大量topic，性能大幅下降，
+  Kafka存储结构：消息最终落盘（顺序存储---提升存取性能）队列就是文件
+    topic增多，队列文件越来越多，非常难以管理、维护
+  RocketMQ存储结构：消息最终落盘（顺序存储---提升性能）
+    队列中存的是索引
+项目引入消息中间件，优点是什么？缺点是什么？
+  缺点：
+    1.MQ故障问题，导致整个服务不可用 --- （集群）
+    2.系统复杂性上升级别（数据一致性、接口幂等......） --- 人员技术能力
+  优点：
+    1.提高服务吞吐能力
+    2.提高用户体验度
+    3.提高系统可用性（稳定性）
+RocketMQ消息存储结构
+  topic主题
+    多个队列（分布在多个broker服务进行存储）
+RocketMQ网络架构： --- 分布式消息中间件（注册中心-服务注册发现、broker消息服务器（master，slave））
+消息投递模型
+  1.activeMQ、rabbitMQ
+    点对点模式
+    发布订阅模式
+  2.RocketMQ
+    Producer -> topic -> consumer
+    消息生产者组（集群） topic逻辑结构 --> 多个队列 消费者组（集群）
+消费模式
+  广播消费
+  集群消费
+    平均分配算法 --- 分配队列给消费者
+    环形平均算法
+    临近机房法
+RocketMQ网络架构
+  NameServer无状态，平等关系，broker要向每一个发送nameserver心跳信息
+Topic：主题 --- 一类消息
+  业务：
+    订单消息
+      tag : 1 过滤出tag为2的消息
+      tag : 2 过滤出tag为2的消息
+    积分消息
+    邮件消息
+分区
+  多通道，多个人同时消费
+Tag
+Offset
+问题解答：
+  commitlog是多个topic共享的
+  master与master之间不需要通信
+
+------------------------------------------------------------
+
+2020-07-02 RocketMQ live02 发送消息负载均衡（源码分析）;消息消费（源码分析）;消息消费丢失情况分析
+发送流程
+  1.获取路由信息
+    1.获取路由信息
+    this.tryToFindTopicPublishInfo()
+    producer group 每隔30s获取TopicPublishInfo
+  2.先从缓存中获取
+    
+  3.获取namesvr路由信息
+  
+  4.重试次数
+    dommunicationMode == CommunicationMode
+    失败重试次数
+  5.选择其中一个队列发送消息（负载均衡）
+      selectOneMessageQueue()
+  6.
+负载均衡算法
+  1.随机递增取模算法
+  2.随机算法
+  3.哈希算法
+  4.
+消息消费
+  如何消费
+  注意：订阅消息必须要使得消费者消费主题必须存在
+  问题：一个消费者组是否可以同时消费多个topic？（实验）
+    答案：同一个消费者组中，多个消费者不能同时消费多个topic，如果出现此现象，会导致部分消息无法消费
+    原因：负载均衡算法问题导致这一现象。（平均分配、环形平均分配）
+    负载均衡算法，把一个主题的队列平均分配给一个消费者组下的消费者。
+    负载均衡算法，根绝topic主题队列，根据消费者组中的消费者数量size，进行平均分配（先分配）
+    负载算法：
+      1.根据组名，把主题下的队列平均分配给一个消费者组下的消费者
+      2.topicA主题：4个队列先平均分配，分配个A 2个队列，B 2个队列，但是B没有订阅topic，因此就会导致2，3队列无法被消费
+      3.topicB主题：同理
+  问题：不同的消费者组是否可以消费不同的topic？
+    答案：可以
+  问题：不同的消费者组是否可以消费相同的topic？
+    答案：可以
+消费模型
+  1.一对多
+  2.一对一
+消费流程
+  pull
+  push
+  1.开始执行消息的拉取
+  2.拉取服务
+    拉取消费服务
+    负载均衡
+负载均衡
+  RebalanceService
+    每20s执行一次负载均衡
+  BalanceImpl
+  1.平均分配算法
+    allocate()
+  2.环形平均分配
+  3.机房broker健康算法
+  4.消费者路由
+    注意：消费者也必须和namesvr保持长连接，consumer从namesvr每30s获取topic路由信息，从而根据负载策略进行消费
+
+------------------------------------------------------------
+
+2020-07-06 RocketMQ live03
+1.消息存储（底层原理）
+2.顺序消息
+3.消息堆积解决
+4.延迟消息
+5.消息去重（幂等接口）
+6.消息高可靠性（100%不丢失）
+7.事务消息
+
+1.消息发送模式
+  1.1 同步发送
+    默认：异步落盘
+    同步slave：默认异步
+    场景：消息可靠性非常高，因此一些重要的消息、不能丢失的消息，使用同步发送。
+      例如：重要消息通知（金融），短信通知
+    重试：默认3次
+  1.2 异步模式
+    场景：适用于对响应时间非常敏感的业务（要求响应的时间非常迅速），不能容忍长时间的等待。项目为了提高吞吐能力，采用异步模式发送消息，
+      异步方式消息的可靠性也是ok的。
+    重试：只有1次，重试一次的原因在于，异步模式发送必须要快，节省时间
+  1.3 Oneway
+    特点：不关心消息发送的结果，有消息丢失。适用于消息不重要的场景。
+2.消息存储
+  send/pull
+  消息存储统一入口：DefaultMessageStore
+  IndexFile：索引文件，hash slot，header， --- 运维
+  ConsumeQueue：消息队列，此队列中存储的是offset（相对位置）
+  Commitlog：真正用来存储消息文件，此文件在顺序存储，在磁盘上一个连续的地址，
+    commitLog默认大小：1G，如果超过1G大小，将会重新再次创建一个commitLog文件存储消息
+  mappedFile - commitLog
+  mappedByteBuffer:内存  --- 虚拟内存（1.5G--- 2.5G） --- 虚拟内存映射技术，通过此将commitLog在磁盘上进行顺序存储。
+  1. commitLog是真正存储消息文件。commitLog中存储多个topic，topic下有很多消息。
+  2. CommitLog取名：根据字节数量进行命名
+    00000000000000000000
+    00000000001073741825 物理位置偏移量
+    00000000001073741911（中间状态） 物理位置偏移量
+    相对 offset， 相减
+  3.ConsumeQueue：offset存储队列，消费者消费消息，根据offset读取commlog文件
+    IndexFile：根据ID查询消息，IndexFile可以很方便的去查询消息、操作消息。（运维）
+  补充:
+    Linux IO操作
+      Linux x86架构模式下标准的read wirte模式，涉及2次IO拷贝，性能相对低下，如此模式下文件存储，在磁盘存储数据分布上是散乱的，不是顺序存储，因此在读取数据的时候是非常慢的。
+        DISK -> 内核：IO缓冲区（pagecache） -> JVM heap内存
+      Mmap内存映射技术：pagecache mmap直接把pagecache映射到用户态地址空间中，实现零拷贝。
+3.顺序消息
+  3.1 场景
+    思考：在什么场景下，才需要发送顺序消息，且消费也必须按照消息顺序进行消费？
+    例如：
+      1.创建订单 --- 发送消息
+      2.支付订单 --- 发送消息
+      3.支付完成 --- 发送消息
+      4.商品出库 --- 发送消息
+    以上业务在项目中具有严格顺序性，不能发送乱序，乱序后业务出现问题。
+  3.2 顺序消息实现
+    发送方：
+      保持消息顺序性，必须是单线程模式发送。
+    存储：
+      1.所有消息都存储在单个队列
+      2.每一个线程都占用一个队列 固定数量%orderID
+    消费：
+      一个消费者对应一个队列，天然顺序
+  3.3 实现
+    重写消息发送策略
+    重写Selector负载均衡 orderId % queue数量
+4.消息堆积
+  情况：
+    消费者出现了问题，不能及时消费消息，导致大量消息积压
+    消费者数量少，消息发送比较快，导致消费者来不及消费消息，导致消息积压
+  RocketMQ单机消息堆积能力：10w级别(消息条数)
+  解决方案：
+    消息不重要：直接跳过大量积压消息，直接抛弃掉，从后面开始消费。
+    重要消息：修复消费者，扩容（扩展消费队列，扩展消费者数量）
+5.延迟消息
+  定义：
+    消息发送到broker服务器，此消息必须等待延时时间到了以后才能被消费者消费，此消息就是延时消息。
+  场景：
+    订单 - （时间间隔） - 支付（5分钟之内，未支付，订单超时，库存恢复）
+    以前的方案：
+      定时任务，每隔1s扫描订单表，检查订单支付和超时状态；
+      对数据库压力非常大，系统性能很差。
+    延迟消息方案：
+      异步解耦，流量削峰
+      5m后查询订单，未支付，关闭订单，恢复库存
+  配置文件
+6.消息去重
+  什么时候会发送消息重复？
+    同步发送，重试3次
+    发送方：网络抖动，broker服务异常，导致超时重试。
+  解决方案：
+    单机版（一个消费者）：
+      Redis/MySQL
+      key-value --- 如果key相同，覆盖值
+      MySQL：unique --- insert
+      consumer：
+        1.接收消息
+        2.查询消息
+          Redis/MySQL
+        3.业务判断，是否有重复消息
+          if (message == oldMessageId) {
+            return;
+          }
+        4.写入消息
+    多个消费者：
+      多线程，不能使用单机的方法
+      分布式锁：
+        客户端互斥
+        redis/etcd/zookeeper/mysql(version)
+7.消息可靠性
+  生产阶段：
+    producer通过网络发送消息，由于网络延迟不可达，网络抖动，导致消息发送失败。
+  存储阶段：
+    可能：producer把消息刚刚发送到broker服务器内存中，此时broker进程宕机了，消息还没有来得及落盘（消息可能丢失）
+      broker宕机的时候，自动shutdown--commitlog.commit
+    肯定：服务器宕机，操作系统宕机了，消息一定会丢失
+    解决方案：
+  消费阶段:
+    消费失败
+  生产阶段解决：
+    解决方案一：消息重试
+    问题：如果重试3次，失败了，消息丢失
+      本地消息表，在同一个事务中入库落盘
+  存储阶段解决：
+    断电（可以通过落盘，同步slave方式解决），操作系统宕机都会存在消息丢失;因为默认情况下,从内存到磁盘是异步落盘.
+    方案一：
+      采用同步落盘方式: 发送消息和落盘是同步模式,落盘才算成功.
+    方案二:
+      master、slave同时落盘,才认为消息发送成功,更安全.
+      flushDiskType = SYNC_FLUSH
+
+------------------------------------------------------------
+
+2020-07-07 Kubernetes live01 虚拟化&云原生基本概念及原理解析
+RocketMQ结尾
+  消费阶段接收失败解决:
+    方案一:
+      重试,默认重试16次
+    方案二:
+      重试16次还失败?
+        人工解决: 运维、console人工设置
+        定时任务:本地消息表进行重新投递,注意重复消息处理
+8.事务消息
+  半消息机制 Half Message
+    发送半消息,先执行本地事务
+    二次确认: 本地事务执行结束,表示此消息可以被消费者所消费
+    可以消费
+  应用场景:
+    事务场景一: 
+      发送消息成功
+      本地事务执行失败
+    二:
+      问题:本地事务执行成功,变速消息失败了?
+        半消息,两次确认
+  代码实例:
+    ...
+问题解答:
+  RocketMQ定位消息在哪个commitlog文件中?
+    根据文件名和偏移量确定
+
+Kubernetes
+为什么学k8s
+  1.互联网企业可以利用k8s构建一套自动化运维平台（运维工作：自愈、自动伸缩...） --- 降本增效
+  2.互联网项目拆分为多个服务（soa、微服务架构），很多服务器资源（物理机、虚拟机），可以使用k8s构建一套环境，进行服务器部署，充分利用服务器资源。
+  3.互联网项目需求不断变更,迭代,使得项目不停发布版本、测试、部署. --- k8s构建一套环境,实现项目无缝迁移.
+虚拟化及虚拟机基本概念和原理
+  虚拟化技术
+    对物理资源(硬件、网络、CPU、内存)进行隔离一种技术,叫做虚拟化技术.可以充分利用计算机的计算资源.
+  虚拟化技术作用
+    充分利用高性能计算机资源
+    利用老旧服务器重组再利用
+云计算
+  OpenStack
+  KVM (Hypervisor)
+  VM Ware
+容器发展
+  LXC (Cgroups Namespce)
+  Docker
+Docker
+  Cgroup
+  Namespace
+Docker-KVM-OpenStack
+  Docker 进程级别隔离
+    1.服务应用开发、测试、部署 --- dock 儿容器技术解决服务从开发、测试、部署实现可持续部署,可持续交付(DevOps)
+    2.应用开发模式是纯粹应用开发模式,可以使用容器技术
+  虚拟化KVM 物理硬件隔离,隔离更彻底
+    1.构建安全级别更高的私有云环境,必须使用kvm虚拟化技术
+    2.公有云 虚拟机技术 -- 内部服务(paas、saas; es、mq - 容器化)
+    3.混合云 虚拟机技术
+  公司中:只适用于业务开发,实现可持续服务交付、部署 --- 不需要使用需您话技术,直接使用容器化方式,对项目进行测试、部署即可.
+  问题1:物理硬件进行虚拟化处理,使用了很多虚拟机,庞大的虚拟机集群网络如何管理?
+    OpenStack
+  问题2:docker部署服务(微服务架构:按照function拆分,服务非常之多...),docker容器越来越多...同时面临很严重的问题,管理庞大容器资源非常困难.
+    可以k8s对容器进行编排管理
+
+------------------------------------------------------------
+
+2020-07-09 Kubernetes live02 云原生 & k8s 的架构及基本组件原理
+云计算3层结构
+  1.IaaS (infrastructor as a service) 基础设施即服务
+    提供硬件层服务: 存储, 网络, dns, 服务器硬件资源...
+  2.PaaS (platform as a service) 平台即服务
+    提供基础软件服务: MySQL, k8s, mq...
+  3.SaaS (software as a service) 软件即服务
+    钉钉, 微信企业版, OA
+云原生
+  何为云原生?
+    概念
+      架构: 软件开发思想 (软件架构思想)
+      应用: 为了让应用程序 (项目, MySQL, es...) 都运行在云上的容器中,这样的技术就叫做云原生 
+      思考: 云原生架构 --- 项目上云 适合云原生架构
+    特点:
+      1. 容器化: 所有都必须跑在容器中
+        容器部署, 有隔离作用 (k8s 编排容器)
+      2. 微服务: 实现云原生最好采用微服务架构
+        微服务按照function拆分后, 可以做到高内聚, 低耦合. 实现CI/CD
+      3. DevOps
+        开发 + 运维 -- 开发和运维的结合体. DevOps 是一种敏捷思维, 开发的一种组织形式, 可以实现项目可持续交付, 部署.
+      4. CI/CD
+        持续交付: 不停机更新
+    云扩展思维
+      1. caas (container as a service) 容器就是一个服务,所有的软件服务都运行在容器中
+      2. faas (function as a service) 函数即是一个服务 -- 微服务脚骨
+      3. service mesh (服务网格架构: 服务治理 -- 限流, 降级, 监控)
+      4. serverless (服务, 无服务) 无服务架构, 程序员开发完全不需要关心服务器, 只需要开发业务代码即可
+  如何云原生?
+    云原生优势
+      1. 本地部署应用可能需要停机更新, 而云原生不需要, 始终是最新的状态, 支持频繁的变更
+      2. 本地部署应用无法进行动态扩展 (动态伸缩容), 云原生可以利用云资源的弹性进行自动伸缩容, 从而为企业降本增效
+      3. 本地部署应用对物理硬件 (IP, 网络端口) 有强依赖, 云原生就不需要了
+      4. 本地部署应用需要人肉运维方式, 而云原生实现自动化运维 (运维: k8s, iaas层)
+    实现云原生
+      采用微服务架构是云原生环境的标配
+    微服务架构:
+      Spring Cloud Alibaba
+        Nacos, Sentinel, Dubbo
+      Spring Cloud Netflix
+  服务部署演变
+    演变:
+      物理机模式, 虚拟机模式, 云原生模式
+    规模大了怎么管理?
+      虚拟化: OpenStack
+      容器化: Kubernetes
+    为什么要管理容器 (虚拟机)?
+      为什么扩容? (自动)
+      容器宕机恢复?  (自动)
+      更新容器会不会影响业务? (不会)
+      如何监控? (自动)
+      如何调度? (自动)
+      数据安全 (自动)
+  容器编排技术
+    docker-compose
+      批量创建, 管理容器. 粗颗粒度
+    Swarm
+    Mesos
+      Apache 的开源项目, 资源管理器, 容器管理
+      不负责调度, 只负责委派授权
+    Kubernetes
+      Pod 和 Label 的概念把容器组合成一个个相互存在依赖关系的逻辑单元. 相关的容器被组合成 Pod 后被共同部署和调度, 形成服务.
+      基本结构:
+        1. master 节点: 调度, 存储集群状态(服务注册发现), 提供统一API入口, 一个master对应一群node节点
+        2. node 节点: 存储pod (pod: 内部封装容器的), 一个 node 节点理论上可以存储无数个 pod, 但是 node 节点存储 pod 的数量受限于硬件资源和 pod 内部服务运行所占用的资源
+Kubernetes
+  Borg 系统
+    google 研发的一套服务管理软件, borg 系统是 k8s 的前身, k8s 架构设计思想参考 borg 系统来架构设计的.
+    google 十几年前已经开发应用 borg 系统, 容器化管理方式.
+  k8s
+    发送请求: kubectl 客户端指令, 浏览器 (可视化方式: rancher, dashboard)
+    master 节点: scheduler 调度器, 负责计算把 pod 调度到哪一个 node 节点
+    Controllers: 维护 node 节点资源对象 (deployment, rs, pod)
+    apiServer: 网关, 所有请求必须经过网关
+    etcd: 服务发现, 注册, 集群状态信息, 调度信息
+    node节点: 运行一个 kubelet 进程, 该进程负责本机服务的 pod 的创建维护
+    registry: 镜像仓库, 阿里镜像仓库, harbor 创建自己的
+  功能
+  集群
+  node 节点
+    Pod: k8s 管理的最小的基本单元, Pod 内部可以运行一个或多个容器. 一般情况下, pod 内部只允许一个容器运行, 便于管理
+    Docker: docker 引擎, pod 内部运行的都是容器, 这个容乃是由 docker 引擎创建的, docker 引擎是 node 节点基础服务
+    Kubelet: node 节点代理, kubelet 代理 master 节点请求, 在本地 node 节点执行.
+    Kube-proxy: 网络代理, 主要是用来生成网络规则, 创建访问路由, 创建service网络访问规则, 负载均衡规则
+    Fluented: 收集日志
+  master 节点
+    ApiServer
+    Controller
+      Replication Controller: 副本控制器 -- 实现副本数量和预期设定的数量永远保持一致
+        例如: 构建集群 6台服务器 -- k8s 部署, 预期设定数量=6, k8s 能永远保证副本数量一直=6
+      Service Controller: 管理维护 Service (虚拟IP), 
+      EndPoints Controller 
+      Persistent Volume Controller: 持久化数据卷控制器
+        有状态服务部署控制器
+      Daemon Set Controller: 让每一个 node 节点都运行相同的服务
+      Deployment Controller: 无状态服务部署的控制器 (项目)
+    etcd
+    scheduler
+      k8s 的调度器
+    创建 pod 的流程:
+      1. kubeclt 发送创建 pod 的指令, 这个指令被 apiserver 拦截, 把创建的 pod 存储在 etcd
+      2. scheduler 发起调用请求, 指令被 apiserver 拦截, 获取 etcdd 中 podQueue, NodeList
+        调度算法:
+          1. 预选调度
+          2. 优选策略
+        选择出比较合适的 node 节点
+      3. 把选择合适的 node, pod 存储在 etcd
+      4. node 节点上有一个kubelet 进程, 发送请求获取 pod, node 对应创建资源
+      5. 此时如果 kubelet 发现 pod 是本机节点需要创建的, kubelet 就开始创建 pod
+
+------------------------------------------------------------
+
+2020-07-11
+课程内容
+  1. pod 核心原理 (底层组成机构, 工作机制)
+  2. ReplicationController 副本控制器
+  3. Deployment
+  4. StatefulSet
+  5. DaemonSet
+  6. Volume
+  7. Label
+课程回顾
+  Kubernetes集群架构 (高可用集群: 多个masster, 每一个对应一群 node 节点)
+  k8s 是什么?
+    是一个容器的编排(管理)工具, 但是 k8s 不直接管理 docker 容器, 而是间接通过管理 pod 来管理(编排)容器
+Pod 核心原理
+  pod 是什么?
+    pod 的特点
+      有自己的 IP 地址
+      有自己的 hostname
+    pod 相当于是一个独立的容器 (虚拟机器), pod 内部封装的是由 docker 引擎创建的容器, pod 是一个虚拟化的分组,
+        pod 内可以存储一个或多个容器.
+Pod 作用
+  pod 内部封装的是容器, 容器内部运行的是开发的应用程序, pod 管理上线的运行的应用程序
+  定义: 通常情况下, 在服务上线部署的时候, pod 通常被用来部署一组相关的服务.
+  什么是一组相关的服务?
+    在一个请求链路上的服务. 通常情况下, 这一组相关的服务在调用链路上处于上下游的关系.
+    经验: 建议一个 pod 内部只允许部署一个容器(一个服务).
+服务集群
+  服务集群如何部署?
+    部署了多个相同服务的 pod, 组成了这个服务的集群. k8s 可以一键式部署, 一键式扩容.
+Pod 原理
+  核心原理
+    1. 数据存储
+    2. 网络
+    pause 容器, 与 pod 一起创建
+      pause 容器创建共享虚拟网卡(网络栈), 共享数据卷
+      同一个 pod 下使用 localhost 通信
+      使用 pause 容器创建共享网卡, pod 内部容器之间使用 localhost 访问, 性能非常高.
+    一个 pod 不能分裂存储在多个 node, 多个 pod 副本可以随机分配到不同的 node 中存储.
+k8s 核心组件原理
+  RC(ReplicationController) -- 副本控制器
+    作用: 永远保证服务数量和预期的数量保持一致. 服务永远不会宕机, 永不停机, 服务永远处于高可用状态.
+        如果 pod 全部宕机, 全部重新创建.
+    注意: 新版本建议使用 ReplicaSet 取代 ReplicationController
+  RS
+    控制器和 pod 控制架构: 副本控制器如何控制 pod
+    RS 和 RC 的区别?
+      RC 只支持单个标签的选择器
+      RS 不仅支持单个标签的选择器, 还支持复合选择器.
+    Label 标签, 用来唯一标识一个组件, k8s 中所有的资源对象都可以被标签类进行标识. 方便灵活地查询到组件.
+      标签相同说明是同一个服务部署了多个副本.
+    标签选择器
+      根据标签 key=value 查询与之对应的匹配的资源对象 (pod, rs, deployment)
+      标签选择器 - 标签 - 选择资源对象 (唯一定位一个资源对象)
+    复合标签选择器: 支持多个标签选择器
+      Selector
+        app = MyApp
+        release = stable
+      注意: 如果单独使用 rs, 就不支持滚动更新(新需求, 项目版本不停迭代 -- 不停机更新). 需要配合 Deployment
+  Deployment
+    Deployment 和 rs 结合, 支持滚动更新(不停机更新).
+      拓扑关系:
+        Deployment 管理 rs, rs 控制 pod
+      实现滚动更新
+        deployment 新建一个 rs2
+        rs2 新建一个新版本 pod, rs1 删掉一个旧 pod...
+        rs1 不会删掉, 用作回滚操作
+      注意: rs 通过标签选择器选择受 rs 所管理的资源对象
+    扩容, 缩容
+  HPA(HorizontalPodAutoScale): 自动更新
+    自动更新(k8s 会根据 CPU 利用率来进行扩缩容)
+      如果 cpu 利用了超过80%, 此时就会对 pod 进行扩容, 如果 cpu 利用率低于50%, 对 pod 进行缩容.
+    监控 rs 下所有 pod 资源利用率
+      min: 4 在 node 节点最小存储4个 pod
+      max: 25 在 node 节点最大存储25个 pod
+      cpu>80% 自动扩容
+  StatefulSet
+    管理 rs 和 pod
+    Deployment 和 StatefulSet 都是用来部署服务的
+      1. deployment 用来部署无状态服务, 不适合有状态服务
+      2. statefulset 用来部署有状态服务
+    无状态
+      1. 没有实时的数据需要存储 -- 静态数据属于无状态
+      2. 在服务集群网络中, 把其中一个服务抽离出去, 过一段时间再加入进来, 对服务集群没有任何影响
+      例子: 订单, 支付服务
+    有状态
+      1. 有实时数据需要存储
+      2. 在服务集群网络中, 把其中一个服务抽离出去, 过一段时间再加入进来, 对服务集群有影响
+      例子: ES, MySQL, MongoDB
+    为什么 pod 方式,  一定要使用 stateful 来部署?
+      前提: 副本创建, 滚动更新, 扩容, 都是创建一个新的 pod. 当一个 pod 宕机后, 新创建一个新的 pod, 因此这个新的 pod 如何恭喜想之前数据,
+          如果不做任何处理, 这个新 pod 就会丢失之前的数据, 对于有状态的服务就是灾难.
+    StatefulSet 部署有状态服务的网络拓扑
+      PVC 持久化存储
+      PV(persistent volume) 持久化存储
+      nfs
+    StatefulSet 保证数据不丢失, 根据 pod 名称来挂载数据的, 也就是说可以让 pod 的名称永远保持不变, 在 pod 宕机重新创建后, 可以根据名称找回数据.
+  DaemonSet
+    让每一个 node 节点都运行一个相同的 pod
+    收集每一个 node 的日志, 就需要在每一个 node 运行一个收集日志的 pod
+    例子: logstash
+
+下节预告(最难: 网络)
+  k8s 服务的发现
+  负载均衡(service)
+  网络
+
+------------------------------------------------------------
+
+2020-07-14
+内容
+1. pod 如何实现内部容器对外网提供服务
+2. 一组 pod 副本如何实现服务发现
+3. service VIP
+4. service 如何和 pod 进行关联
+5. service 如何实现服务发现
+6. service 和业务服务的关系
+7. service 负载均衡的几种策略
+回顾
+1. 有哪些资源对象
+2. pod部署服务有几种模式
+  pod 内部只部署一个容器
+  pod 内部部署讴歌容器: 多个容器服务必须紧密耦合关系，才允许部署在一个 pod 内部。
+3. 
+4. 
+
+1. 外网访问pod
+  问题: pod 如何提供服务
+    
+  问题: 是否可以通过外网直接访问 pod 的 ip:port
+    不可以, pod 只是一个进程, 没有与之对应的物理实体, 要在现实的网络中进行通信, 必须要有与之对应的实体.
+        pod 要和外部通信, 必须借助于物理网卡
+
+  pod 内部访问
+    通过 pod 的 ip 地址, 加上端口可以在 node 节点局域网内部实现 pod 的访问, pod 端口是 front server 的端口, 访问 pod 实现请求准发, 
+        直接把请求转发给 front server 即可
+  1.3 外网服务
+    要和内部的 pod 进行通信, 必须在物理机上开辟一个端口, 通过物理机的端口对数据包(请求)进行转发, 把请求转发给 pod, 实现 pod 服务的外网访问
+  1.4 服务集群
+    使用 k8s 部署服务, 所有的服务部署在 pod 内部的容器中, 服务集群就需要多个 pod 副本实现.
+    思考: 如何实现多个 pod 副本实现负载均衡访问?
+      方案: 使用 nginx 实现负载均衡, 是否可行? 不行
+        pod 是一个服务进程, 有生命周期, 或者 pod 随时可能宕机, k8s 立即对 pod 进行重建, 此时新 pod 的 ip, hostname 都发生变化,
+            此时 nginx 还能访问新的 pod 吗?
+        总结: nginx 作为 pod 副本的负载均衡服务器, 无法发现 k8s 新建的 pod, 所以 nginx 作为 pod 的负载均衡服务器, 无法实现.
+2. Service VIP
+  是什么?
+    Service VIP 是 k8s 提供的一个虚拟 IP, service 是一个虚拟 ip 的资源对象. Service VIP 相当于服务网关, 所有请求都要被 service vip进行拦截,
+        然后进行转发, 它屏蔽来底层 pod ip, hostname 变化所造成的影响, 用户不需要关心 pod 的 ip、hostname 变化
+    注意：service vip 一旦创建就不会变化， service vip 高可用性由 etcd 保证，service vip 作为一组 pod 业务的统一网关入口。
+  如何实现 pod 负载均衡
+    k8s 核心资源对象几种IP地址分类
+      1. NODE IP -- 物理机节点IP地址
+      2. POD IP -- POD IP地址
+      3. cluster IP -- 虚拟机IP，由k8s抽象出的service资源对象具有的IP地址，此ip地址类型默认就是clusterIP，此类型只能在局域网内部通信，
+          无法对外网提供服务
+    如何实现
+      1. 在物理机开辟一个端口，实现数据包（请求）转发
+      2. 创建 service vip 资源对象，实现物理端口和service vip端口关系映射，从而从物理机端口转发的请求自动转发给 service vip
+      3. service 资源对象通过转发策略，把请求转发给响应的 pod
+  service 关联 pod
+    service 通过标签选择器选择一组相关的 pod 创建service, 也就是 service 只对一组 pod 的相关的 pod 副本
+    一个业务组 pod 副本对应一个 service
+  2.4 pod 服务发现
+    pod 宕机, 重建pod后, pod的ip地址、hostname变化,service 可以感知到.
+    k8s node 节点中提供一个核心组件: kube-proxy 主要用来实现服务发现, 路由规则改写.
+    kube-proxy 在每个 node 中都有一个进程
+      监听 pod, 感知 ip 变化
+      改写 service 资源对象的 endpoints (改 etcd)
+  总结: 所有资源对象都存储在 etcd, 可以用 yaml 资源配置文件方式进行表示, 因此这些资源以yaml方式存储
+3. 负载均衡策略
+  3.1 service vip 是如何产生的?
+    自己创建的, service vip是k8s的核心资源对象, 资源对象名称: Service, 服务部署时必须创建 service, 可以通过k8szhiling,
+        yaml文件方式进行创建(可视化界面)
+    部署服务
+      创建service
+      创建pod
+  3.2 负载策略
+    pod 副本负载均衡的3种方式
+      userspace
+      iptables
+      ipvs
+    userspace
+      负载均衡kube-proxy实现, kube-proxy负载压力大,性能不好
+    iptables
+      通过物理端口发送请求, 由客户端 pod 接收后, 把请求转发给后端服务集群的serviceVIP, 由serviceVIP把请求焕发给相应的node节点的时候,
+          请求就会被iptables路由规则拦截,根据iptables路由规则进行请求分发
+      问题: iptables请求分发策略有几种?
+        随机、轮询
+    ipvs
+      iptables的扩展
+
+------------------------------------------------------------
+
+2020-07-16 k8s集群构建
+机器环境
+  cpu >= 2, memory >= 2G, DNS, linux内核版本 > 4
+  3台虚拟机
+  修改: mac, ip, dns, hostname, hosts
+
+------------------------------------------------------------
+
+2020-07-18
+内容
+  1.指令实现镜像部署
+  2.实现扩容
+  3.局域网访问
+  4.dns域名访问
+  5.负载均衡
+  6.service外网访问
+  7.yaml资源文件部署
+1.镜像部署（指令）
+  kubectl run deploymentName --image=url --port=80
+  过程
+    kubectl run myapp --image=ikubernetes/myapp:v1 --port=80
+    kubectl describe pod myapp-...-...
+    kubectl get pod
+    kubectl get pod -o wide -n kube-system
+
+    kubectl get deployment
+    kubectl get rs
+  kubectl run 指令创建3个资源对象 Deployment, ReplicaSet, Pod
+    默认创建1个pod
+2.扩容
+  kubectl scale deployment myapp --replicaset=4
+  kubectl scale deployment/myapp --replicaset=4
+  互联网项目瞬时流量增大，可以使用指令一键式扩容，简单方便。
+3.自愈
+  当pod故障、宕机，k8s自动对pod进行重建，因此pod的副本永远处于高可用状态
+  删除pod
+    kubectl delete pod --all
+  新建的pod和旧的pod名称和IP都不同
+4.负载均衡
+  通过service实现访问pod副本的负载均衡
+  对一组pod创建service
+    kubectl expose deployment myapp --port=30000 --target-port=80
+    kubectl expose deployment/myapp --port=30000 --target-port=80
+  kubectl get svc
+  负载均衡策略
+    默认是轮询
+5.dns
+  登录容器  kubectl exec -it myapp-... -- sh
+  在容器内  wget myapp:30000
+6.外网访问
+  service和pod之间属于局域网通信访问，无法对外网直接提供服务，service是一个虚拟化的概念，是一个虚拟IP地址，没有对应的物理资源，
+  kubectl edit svc myapp 编辑service对应资源对象配置文件，修改IP类型
+    通信类型 ClusterIP -> NodePort
+      type: NodePort
+    开辟物理端口，默认30000 - 32767
+    通过物理IP:物理Port访问
+7.滚动更新
+  kubectl set image deployment myapp myapp=新的镜像
+2.YAML 方式部署
+2.1资源清单
+  kubectl explain pod
+2.2 yaml 部署
+  部署服务
+    1 deployment
+    2 service
+  Nginx 镜像部署
+    Deployment 配置文件 3个部分
+      1. 资源对象定义区（deployment,statefulset）
+        apiVersion: v1
+        kind: Deployment
+        metadata:
+          name: nginx-deployment
+          namespace: default
+      2. rs 资源对象定义区
+        spec:
+          replicas: 3
+          selector:
+            matchLabels:
+              app: mynginx
+              release: stable
+              env: test
+      3. pod 资源对象定义区
+          template:
+            metadata:
+              labels:
+                app: mynginx
+                release: stable
+                env: test
+            spec:
+              containers:
+              - name: my-nginx
+                image: nginx:v1
+                imagePullPolicy: IfNotPresent
+                ports:
+                - name: http
+                  containerPort: 80
+      命令  kubectl apply -f nginx-deploy.yaml
+    Service 部署
+      1. Service 资源对象
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: nginx-svc
+          namespace: default
+      2. 选择器与 pod 关联
+        spec:
+          type: ClusterIP
+          selector:
+            app: mynginx
+            release: stable
+            env: test
+          ports:
+          - name: http
+            prot: 80
+            targetPort: 80
+      kubectl apply/create -f nginx-svc.yaml
+实际工作中：
+  1. 可视化界面部署方式（rancher，dashboard）
+  2. 指令方式
+  3. yaml 文件方式
+Jenkins + docker + git + k8s 线上部署 CI/CD
+
+------------------------------------------------------------
+
+2020-07-21
+内容
+  1. harbor 企业级私有镜像仓库（Jenkins，docker，k8s）
+  2. 通过私有镜像部署服务
+  3. dockerfile 构建镜像
+  4. yaml 配置文件镜像部署
+  ipvsadm  -Ln 查看映射规则
+  低版本不支持ipvs，使用iptables
+Harbor 仓库
+  Harbor优于Registry
+Dockerfile 部署
+yaml 部署
+
+------------------------------------------------------------
+
+2020-07-23
+资源控制器
+  自主式 pod
+    管理器 pod
+  Deployment
+  DaemonSet
+    部署在每一个节点都要同时运行一个服务的方式
+  Job
+    一次任务
+  cronJob
+    定时任务
+Pod 生命周期
+  Pod Phase
+    Pending, Running, Succeeded, Failed, Unknown
+  重启策略
+    Always, OnFailure, Never
+  pause 容器
+  init 容器
+    特点
+      运行到成功为止
+      每个 init 容器执行是串行化的
+    作用
+      包含实用工具
+  start 钩子函数 postStart
+  stop 钩子函数 preStop
+  就绪检测探针 readiness
+  存活检测探针 liveness
+    exec
+    httpget
+    tcp
+
+------------------------------------------------------------
+
+2020-07-25
+configMap
+  目录
+  文件
+  from-literal
+  yaml文件创建
+  pod 中应用
+    env
+    command
+    volume
+  热更新
+secret
+  secret account
+  opaque
+    通过volume挂载到容器内部
+    导出到环境变量
+volumes
+  类型
+    云文件系统，网络存储(nfs)，hostpath，k8s到secret等
+  emptyDir
+  hostpath
+  nfs
+pv&pvc

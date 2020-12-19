@@ -1,0 +1,15 @@
+20201011
+Spring Security
+安全的注解最好加在Service业务类上，没办法才加到Controller控制器上
+Spring父/子容器中的注解支持要区分，例如security的注解配置在父容器中，子容器的Controller用不上
+
+@Validated 请求参数不符合要求时，报400，Bad Request
+@RequestBody 处理ContentType为json的请求，否则报415，不支持的媒体类型
+
+20201218
+#同一个pdf文件不同页的尺寸可能不同吗？
+可能
+#Java Future 原理
+https://www.jianshu.com/p/69a6ae850736
+
+20201219

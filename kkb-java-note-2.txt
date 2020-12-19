@@ -1,0 +1,668 @@
+12.Netty
+  1.Netty 学习录播
+    n.异常信息的传递
+      向 tail 方向传递，不管 inbound 还是 outbound
+      invokeExceptionCaought()
+      fireExceptionCaught()
+      findContextInbound(mask)
+      onUnhandledInboundException()
+    n.对异常的统一处理
+      添加异常处理器到最后，不再向下传递
+    n.课程总结
+      ChannelInitializer
+
+13.分布式 RPC 框架 Bubbo
+  12.Dubbo 作业处理（录播）
+    1.问题的提出
+      提供者怎么处理消费者请求
+      消费者怎么创建 ExchangeClient / NettyClient 
+      消费者怎么处理响应
+    2.提供者处理消费者请求总任务解析
+      channelRead() 接收
+      Dispatcher 线程派发器，线程执行器
+      执行线程 message -> exporterMap -> invoker
+      invoke() 方法完成运算，形成结果响应对象
+      通过 NettyChannel 发送响应对象
+    3.服务暴露与exporterMap
+      ServiceBean
+
+19.K8S
+  10.k8s实战-pv&pvc&statefulset
+    课程主题
+      1.pv 持久化数据卷
+      2.pvc 屏蔽底层存储介质
+      3.pod + pv + pvc
+      4.headless service
+      5.statefulset + pv + pvc
+    1.PV PVC
+      PV PersistentVolume 一种资源对象
+        屏蔽 pod 对底层物理存储介质的关联性
+        静态、动态
+      PVC PersistentVolumeClaim
+        持久化数据卷声明
+        帮助 pod 找到合适的 pv
+          1.标签选择器
+          2.读写模式（ReadWriteOnce，ReadWriteMany）
+          3.高/慢速
+          4.存储大小
+      实践
+        1.构建网络存储介质（nfs 文件系统），启动状态
+        2.先创建 pv 持久化数据卷（k8s 资源对象）
+        3....
+    2.Headless service
+      1.Service
+      2.Headless
+        无头 service，此 service 服务没有 ip（VIP） 地址，特殊service，用来对有状态服务
+            的部署提供的 Service
+        把 pod 的 ip 暴露给外部
+        例如：
+          Redis、Kafka，
+        ClusterIP：None
+    3.Statefulset
+      pod 有顺序的创建，有顺序的删除
+      volumeClaimTemplates 方式部署，自动创建 pvc，然后绑定相应的 pv 持久化数据卷。
+    4.storageClass
+      自动创建 pv 机制
+      pvc 的自动化实现方式：volumeClaimTemplates
+      pv 自动化：storageClass实现
+    问题：一个 pvc 可以被多个 pod 同时挂载吗？
+      可以
+  11.Jenkins, k8s, ingress
+    CI/CD
+    ingress 就是 nginx
+  12.helm, dashboard, prometheus, grafana
+    ingress https
+      生成私钥；生成证书；创建 secret；创建 ingress 引入证书
+    1.helm
+      1.helm 是什么
+        k8s 的包管理器，类似于apt、yum，统一管理 k8s 的各种资源
+        helm 项目开发结构
+          Chart.yaml
+          templates
+            deployment.yaml
+            service.yaml
+          values.yaml -- 相当于 comfigmap 资源对象，用于存储公共资源
+        安装 redis 集群
+          helm install redis-chart
+        helm 安装的项目下载
+      2.helm 原理
+        组件：客户端、Tiller、Repository、chart
+      3.helm 部署
+        github 下载 helm 压缩包
+        helm 放入 /usr/local/bin
+        安装 tiller
+          下载 tiller 镜像
+          打包镜像
+          备份上传到其他 node 节点
+      4.helm 工程开发
+        chart.yaml
+          名称、版本
+        templates
+          deployment.yaml、service.yaml...
+        values.yaml
+          相当于 configmap，存储镜像地址、版本
+        helm upgrade
+      5.debug
+        --dry-run
+    2.dashboard
+      helm repo update
+      helm fetch stable/kubernetes-dashboard
+      helm search stable/kubernetes-dashboard
+      helm install
+      对外开放端口 kubectl edit svc svc-name -n ...
+        ClusterIP -> NodePort
+      secret token
+    3.prometheus
+    4.grafana
+
+20.项目
+  1.项目架构设计及优化思路
+    1.项目计划
+    2.架构师认知
+      3.目标：高性能、高可用、可伸缩、可扩展、安全性、敏捷性
+      4.策略：分层、分割、分布、集群、缓存、异步、冗余、安全、自动、敏捷
+      5.高性能优化
+        前端、浏览器、应用层、代码、存储优化
+        总结：
+          1.服务拆分 2.请求拦截在上游 3.代理层：限速、限流 4.服务层：队列的流量控制
+      6.高可用架构
+        评估
+          2个9：系统可用性 99% -- 基本可用 87.6h/year
+          3个9：8.8h
+          4个9：53min
+          5个9：5min
+          6个9：
+        解决：
+          应用层：无状态；服务层；数据层
+        总结：
+          1.负载均衡 2.限流 3.降级 4.隔离（线程、进程、集群、机房、读写、动静、热点隔离） 5.超时、重试 6.压测、预案
+      7.可伸缩
+      8.可扩展
+      9.安全架构
+    4.架构演进
+      1.演进
+        水平拆分 + SOA -> 微服务
+      2.单体
+        1.TPS 估算
+          影响因素：RT（response time）、CPU 上下文切换、内存
+        2.项目（app），小程序，追求极速响应时间（RT）
+          响应链路短，rt 响应速度快
+        3.优化
+          1.应用服务、MySQL 分离部署
+          2.集群部署，nginx/openresty，redis 存 session
+            考虑问题：故障转移、请求分发、session 共享
+            不能无限增加物理/虚拟机：上游服务仲裁能力有限
+          3.进一步提高性能
+            缓存：将数据推送到离用户最近的地方 -- 热点数据存储在缓存 redis 中
+            SQL 优化：分表、分库、索引
+            文件存储：高速磁盘阵列
+            ES
+          4.CDN 缓存，nginx 缓存，浏览器缓存
+      3.水平拆分
+        1.数据库水平拆分，垂直拆分
+          水平拆分：分层拆分，业务模块不发生变化，而是进行数据分块存储
+          垂直拆分：
+        2.项目水平拆分
+          分层拆分，根据表现层、业务层、持久层进行分层拆分，每一层的很多业务模块没有进行分离
+      4.垂直拆分
+        按照业务模块方式拆分：垂直拆分 -- SOA 架构
+        把业务模块进行隔离（进程级别隔离）
+      5.微服务架构
+        水平拆分 + 垂直拆分 = 微服务架构
+      6.架构思考
+  2.阿里云服务环境&Jemeter压力测试&性能参数解析
+    1.项目介绍
+    2.阿里云服务器
+    3.配套环境部署
+    4.服务部署
+      MySQL数据导入
+      项目
+        如果没有spring-boot-maven-plugin，会导致依赖包无法打入jar
+      redis
+      启动服务 nohup java -jar jshop-web.jar --spring.config.addition-location=application.yaml > jshop.log 2>&1 &
+      外挂配置文件 --spring.config.addition-location=application.yaml
+    5.Jmeter
+      压力机
+      Jmeter插件安装（监控服务器cpu使用率、内存情况、io情况，产生TPS曲线图）plugins-manager
+      服务器安装ServerAgent配合监控
+    6.压力测试
+      Jmeter
+        计划
+        线程组
+          Ramp-Up时间
+            线程启动时间，不要设置成0，0表示所有线程必须立即建立；不要设置太短。并发线程应在一个时间段内发生请求。
+          循环次数
+            线程数：n=5，循环次数：A=1000，Ramp-Up：T=10s，平均响应时间：t=0.2s
+          最后一个线程开始运行的时候，第一个线程还在运行，这样才能产生并发
+            A * t > T - T/n
+        http请求 KeepAlive
+        聚合报告
+          样本，平均值（rt response time），中位数，90%，95%，99%，最小值，最大值，异常%，吞吐量（tps），接收KB/s，发送KB/s
+        察看结果树
+        transactions per second（TPS曲线图）
+      监控插件
+        nohup java -jar ./CMDRunner.jar --tool PerfMonAgent --udp-port 7879 --tcp-port 7879 > jmeter.log 2>&1 &
+        PerfMon Metrics
+      性能曲线分析
+      调优指令
+        top
+          load averag
+            1min 5min 15min cpu平均使用率
+            单核
+              load average<0.7 cpu资源很空闲
+              load average=1 cpu资源占满，恰好都可以运行
+              load average>1 cpu超负荷运作
+              load average>5 cpu极度超负荷运作
+            4核心CPU
+              load average=4 资源占满
+        vmstat
+          r 
+          b 正在等待的
+        iostat -d 2 2
+          -d 磁盘信息
+          -k 
+          -t 打印时间信息
+  3.性能瓶颈分析&服务优化&JVM优化实践
+    0.课程主题
+      1.测试tomcat性能极限
+      2.tomcat服务性能优化，压测
+      3.服务+数据库一起压测
+      4.模拟1000w条数据，压测
+      5.jvm优化原理
+      6.jvm优化实战
+    1.服务压测
+    2.压测效果
+    3.性能优化
+      最大线程数：默认200，4核8G -> 800~1000
+      等待队列长度accept-count：1000
+      最大连接数：默认10000（8196），修改20000
+      最小工作空闲线程数：默认10，修改100（预留100准备应对突发流量）
+      不耗时反而性能降低，因为线程多了
+    4.耗时操作
+      查看连接数 netwtat -an | grep ESTABLISHED | wc -l
+    5.keepalive
+      Jmeter 和 tomcat 保持keep alive长连接方式，防止频繁建立连接、销毁，
+      设置keepalive超时时间
+      合理控制keepalive连接数
+    6.jvm
+      1.为什么调优？
+        1.垃圾太多，内存占满或溢出
+        2.垃圾回收线程太多
+      2.调优原则
+        1.GC时间足够小（堆内存设置小）
+        2.GC次数足够少（堆内存设置大）
+        3.发生full GC的周期足够长
+      3.什么是垃圾
+      4.怎么找垃圾
+        1.引用计数
+          无法解决循环引用
+        2.可达性分析
+          Hotspot
+      5.垃圾回收算法
+        1.mark-sweep（标记清除）
+          碎片
+        2.Copying（拷贝）
+          空间浪费
+        3.mark-compact（标记压缩）
+          把存活对象拷贝到可回收空间中，然后把存活对象压缩
+          拷贝+压缩，消耗时间，性能低
+    7.常用垃圾回收器
+      响应时间优先：parNew + CMS
+      内存较大：parallel Scavenge + Parallel Old (jdk8默认)
+      内存较小：serial + serial Old
+    8.分代模型
+      eden survivor survivor tenured
+      new/young(新生代) 老年代
+      jdk8默认年龄15后进入老年代
+    何时触发垃圾回收？
+      有的回收器只有空间满了以后才会回收；有的是到达一定比例
+      新生代满了，开始垃圾回收
+      老年代满了，开始full GC
+      STW -- stop the world（单线程收集垃圾，多线程收集垃圾）
+      CMS -- 一边干活，一边收集垃圾
+    9.jvm优化实践
+      1.典型设置
+        -Xmx 最大堆内存
+        -Xms 最小堆内存，设置和-Xmx一样大，防止堆内存抖动
+        -Xmn2g 年轻代大小，堆 = 年轻代 + 老年代 + 持久代，sun推荐为3:8
+        -Xss128k 线程堆栈大小
+        -XX:+PrintGCDetails
+      2.吞吐量优先
+        -XX:+UseParallelGC PS + PO
+        -XX:ParallelGCThreads=4
+      3.响应时间优先
+        -XX:+UseConcMarkSweepGC
+        -XX:+UseParNewGC 
+        ParNew + CMS + SO(备用)
+
+  4.JVM优化实践、数据库优化、全链路压测
+    1.MySQL优化
+      1.什么导致MySQL性能问题
+        思考
+          1.大流量QPS
+          2.数据库横向扩容（不能随意扩容，数据一致性、完整性：master + 10 slave）
+          3.服务器硬件
+          4.操作系统
+          5.存储引擎
+          6.磁盘io
+          7.网卡流量
+          8.SQL查询速度
+        风险
+          1.效率低下SQL语句（高tps，sql效率重要）
+          2.cpu数量问题：sql不支持多cpu并发运行，一个sql在一个cpu运行
+          3.数据库连接数被占满（max_connections）
+          4.超高cpu使用率
+          5.磁盘io性能问题：使用高速存储设备
+          6.网卡流量：网卡io占满
+          7.大表：数据量大（慢查询，建立索引耗时）
+            解决：
+              分表分库
+              数据归档（历史数据归档）
+      2.服务器调优
+        /etc/sysctl.conf
+        sysctl -p  刷新操作，使配置生效
+        1.网络参数
+          net.core.somaxconn = 65536 监听队列，客户端和服务端可以建立更多连接
+          net.core.netdev_max_backlog = 65536 允许发送的最大的包的数量
+          net.ipv4.tcp_max_syn_backlog = 65536
+          net.ipv4.tcp_fin_timeout = 10
+        2.内存参数
+          shmmax 主要用于InnoDB的缓冲池的大小设置，建议物理内存的一半
+          swappiness = 0 物理内存不够了才用交换区
+        3.资源限制
+          * soft nofile 65535
+          * hard nofile 65535
+        4.磁盘调度
+          默认调度策略：cfq
+          /sys/block/devname/queue/scheduler -- deadline
+      3.线程池优化
+        1.druid线程池
+          监控组件完备（监控SQL性能问题：慢查询）
+          性能（查询、写入，支持PScache）
+        2.druid线程池配置
+          initial-size: 1 初始化物理连接数，用于突然流量
+          min-idle: 5 最小连接池数量
+          max-active: 5 cpu核心+1，最大连接池数量，可以设置大些，最多设置20，
+            不能设置太多，执行sql时加锁，建立连接太多，造成性能低下
+          max-wait: 20000 最大等待时间，单位ms，
+            当连接池被占满后，max-wait=0，请求直接被拒绝
+            经验：内网800，外网>1200 提高连接池性能
+          keep-alive: true 保持长连接
+          pool-prepared-statement: true PSCache
+        3.max-connections设置（就是上面的max-active）
+          max-connections: 10(1800) -> 20(2500) -> 500(1900)
+          max-wait: 10000ms
+        4.max-wait
+          推荐内网800ms，外网>=1200ms
+          remove-abandoned: true
+          remove-abandoned-timeout: 80
+        5.connectionTimeOut, socketTimeout
+          connectionTimeOut: 3000 建立tcp连接超时时间
+          socketTimeout: 1200 等待响应超时时间
+          这2个参数可以追加到url后面
+        6.db慢查询
+          druid filter记录慢查询
+      4.MySQL调优
+        1.慢查询
+        2.max_connections
+          too many connections，要增大服务器连接数
+        3.查询缓存
+          show global status like '%qcache%'
+          show variables like 'query_cache%'
+          read_buffer_size
+          join_buffer_size
+          thread_cache_size
+        
+  5.数据库优化、全链路压测、openresty部署
+    1.全链路压测
+    2.分离部署
+
+  6.分布式部署、openresty部署、openresty优化设置
+    1.分布式部署
+      1.openresty -> 2个秒杀系统 -> MySQL
+      2.openresty部署
+        下载 -> 解压 -> 编译 ./configure -> make && make install
+        默认路径：/usr/local/openresty
+        sbin/nginx
+      3.前端服务
+        location
+        upstream
+      4.后端部署
+        proxy_pass http://BACKEND
+      5.压力测试
+      6.前端链路
+    2.openresty优化
+      1.CPU亲和性
+        nginx工作进程数设置为cpu核心数倍数，绑定cpu
+        worker_processes 4;
+        worker_cpu_affinity 0001 0010 0100 1000;
+      2.工作线程数
+        use epoll; # epoll  io 模型
+        worker_connections 65535; # 每个进程最大连接数
+        multi_accept off; # on开启时，多个worker串行连接；连接数很多时，必须开启，反之关闭
+        nginx io 模型：
+          select：遍历socket，阻塞，1024
+          poll：链表，没有1024限制，socket排列成队列，阻塞式处理请求
+          epoll：linux2.6+，高效的io事件通知机制，无最大连接数限制，通过回调函数通知机制，无需每次线性遍历
+      3.高效传输
+        sendfile on; # 开启高效文件传输模式；下载：off
+        tcp_nopush on; # 防止网络阻塞
+      4.keepalive
+        客户端长连接：浏览器 - nginx
+          http
+            keepalive_timeout 120s 120s; # 长连接超时时间，第二个表示在响应头中添加keepalive
+            keepalive_requests 10000; # 每个进程最大连接数
+        服务端长连接：nginx - 服务端
+          upstream BACKEND {
+            server 10.0.3.176 weight=1 max_fails=2 fail_timeout=30s;
+            server 10.0.3.177 weight=1 max_fails=2 fail_timeout=30s;
+            keepalive 300; # keepalive最大空闲连接数
+          }
+          location / {
+            proxy_pass http://BACKEND;
+            proxy_set_header Host $host;
+            proxy_set_header x-forward-for $remote_addr;
+            proxy_set_header X-Real-IP $remote_addr;
+            add_header Cache-Control no-store;
+            add_header Pragma no-cache;
+            proxy_http_version 1.1;
+            proxy_set_header Connection ""; # 默认开启keepalive连接
+          }
+      5.Nginx缓存
+        缓存：js，css，图片。特别是图片，占用带宽大，设置缓存在nginx本地，缓存10d
+        location ~* \.(ico|jpe?g|gif|png|bmp|swf|flv)$ {
+          expires 30d;
+          access_log off;
+        }
+      6.防盗链
+        每个网站都要做：防止别人直接从你的网站引用应用图片，jss、css等连接。消耗了你的资源、网络流量。
+        措施：水印、防火墙
+        location ~* ^.+\.(jpg|gif|png|zip)$ {
+          valid_referers noneblocked qps001;
+          if ($valid_referers) {
+            return 404;
+            break;
+          }
+        }
+      7.限流、压缩
+
+  7.秒杀系统-缓存接入之多级缓存&压力测试&性能分析
+    课程内容
+      1.缓存基本架构使用原理方法
+      2.分布式缓存（redis）
+      3.对内缓存（guava）
+      4.nginx缓存（文件系统缓存）
+      5.nginx+lua（共享缓存）
+      6.nginx+lua+redis（缓存策略）
+    1.缓存基本架构
+      浏览器缓存
+      CDN缓存
+      nginx/openresty缓存 lua-redis
+      application应用程序 JVM堆缓存
+      分布式缓存 redis
+      MySQL 数据库缓存
+      注意：
+        本地内存 > redis > 磁盘缓存
+        合理设置缓存过期时间
+    2.缓存基本原理
+      http缓存cache-control设置缓存 max-age
+      cdn 缓存静态资源
+      nginx
+        本地文件
+        nginx+lua shared dic 共享内存缓存（性能高）
+        nginx+lua+redis 分布式缓存（性能高）
+      应用程序级别缓存
+        guava cache （可以设置过期时间，尽量防止脏数据）
+        map作为缓存，防止脏数据
+          timer定时清理map
+          mq消息中间件，当数据更新，更新map的数据
+      分布式缓存
+        redis
+      问题
+        redis访问为什么高性能？
+          io模型-多路复用模型
+        redis是单线程吗？
+          对外单线程，内部多线程
+    3.分布式缓存
+      1.redisconfig 序列化
+      2.添加缓存
+        读缓存，写异步（队列，mq）--提高吞吐能力
+      3.压测
+    4.JVM堆缓存 GuavaCache
+      1.config
+      2.
+    5.openresty
+      1.proxy cache
+        nginx中开辟磁盘空间，使用文件的方式，把数据缓存在nginx磁盘空间内
+        配置
+          proxy_cache_path /usr/local/openresty/cache_temp levels=1:2 keys_zone=cache_tmp:100m inactive=3d
+              max_size=2g;
+          proxy_cache cache_tmp;
+          proxy_cache_key $uri;
+          proxy_cache_valid 200 206 304 302 3d;
+        磁盘io效率低下，适合吞吐量小的情况
+      2.Nginx+lua
+        lua可以实现简单web服务
+        Lua连接mysql，redis，memcached...类似nodejs（openresty架构的web服务，可以轻松超越nodejs性能）
+        内存字典 / 直接访问redis
+      3.lua入门
+        content_by_lua "ngx.say("hello!")"
+        content_by_lua_file "lua/test.lua"
+      4.lua原理
+        每个nginx进程都嵌入了luajit vm，执行lua脚本，执行性能高。
+        nginx如何导入lua脚本。
+          nginx通过指令，api进行脚本导入
+            content_by_lua
+            content_by_lua_file
+            lua_use_default_type
+      5.nginx+dic缓存
+        内存字典，所有进程（worker）共享的内存数据，提高吞吐能力。
+        LRU 淘汰策略
+        1.配置定义
+          lua_shared_dict ngx_cache 128m;
+        2.lua 脚本
+          local ngx_cache = ngx.shared.ngx_cache
+          local value = ngx_cache:get(key)
+          local succ,err,forcible = ngx_cache:set(key, value, expiretime)
+        3.nginx 配置 location，lua 脚本入口
+      6.nginx+redis缓存
+        lua 脚本操作 redis
+  8.lua缓存实现、下单实现、性能分析
+    1.下单
+      1.判断登录
+      2.秒杀是否合法（库存、活动时间、是否活动商品）
+      3.下单（写数据库）
+      4.销量增加
+      库存问题
+        锁 -- 性能
+          程序锁
+          aop锁
+          数据库锁
+          队列术
+          分布式锁
+        最终一致性
+
+  9.下单实现、库存控制、性能优化
+    1.普通下单
+    2.多线程优化
+    3.缓存优化
+      开始之前同步缓存
+      活动商品从哪儿开始加入缓存
+        1.手动开启活动
+        2.定时任务
+      开启秒杀
+        1.秒杀商品入库（redis) -- 为了不延迟，设定好缓存时间
+        2.开启
+
+  10.下单实现、库存控制、性能优化2
+    1.库存控制
+      超卖，同一商品卖多次
+    2.优化下单
+      1.无锁下单
+      2.程序锁下单
+        出现超卖，spring事务问题
+        锁释放了，事务还未提交
+        解决：
+          锁上移 -- aop锁（上移）
+          手动控制事务
+      3.AOP锁
+        自定义@Servicelock注解，使用切面@Aspect @Around ...
+      4.缓存优化
+        从redis缓存中获取数据
+      5.队列术
+        定义队列 BlockingQueue
+        ApplicationRunner中开启消费线程
+      6.多线程
+        添加队列的操作放到多线程中
+    7.分布式下单
+      1.MySQL锁（乐观锁、悲观锁）
+      2.分布式锁（redis,zookeeper,etcd）
+      3.队列术（redis、mq）
+
+  11.数据库锁、分布式锁、缓存扣减库存
+    1.数据库锁库存控制（悲观、乐观）
+      for update
+      version
+    2.分布式锁（redis、zookeeper）
+      redisson
+      升级为aop锁（解决和本地事务冲突问题）
+    3.缓存扣减库存优化策略
+      直接操作redis中的库存
+  12.分布式事务、数据一致性
+    1.分布式事务
+      1.是什么
+        基本理论
+          数据库，一个SQL语句就是一个事务
+          业务，一个程序实现但愿（一个或多个SQL语句）
+        特性：ACID
+      2.分布式问题
+        故障
+    2.CAP
+    3.BASE
+    4.分布式事务场景
+    5.分布式事务规范
+      1.X/OPEN
+      2.XA
+        AP, TM, RM
+      3.2pc
+        问题：
+          1.阻塞问题
+          2.数据一致性问题
+      4.3pc
+    6.Lcn案例
+    7.分布式事务解决方案
+      1.框架：
+        1.seata
+        2.lcn
+        3.hmily
+        4.bytetcc
+        5.easyTransaction
+        6.saga
+        7.tcc-transaction
+        8.atomikos
+        9.jta
+      2.JTA
+        分布式事务Java版本接口规范（把xa接口进行了java版本扩展，实现本地化）
+        1.jboss -- 分布式事务解决
+        2.weblogic -- 分布式事务解决
+        3.tomcat -- 没有实现jta接口，没有提供数据一致性解决方案
+        4.undertow -- 没有实现jta接口，没有提供数据一致性解决方案
+      3.atomikos
+        tomcat引入jar包
+      4.Lcn
+        事务注册原理
+          1.事务发起者：创建一个事务组
+          2.其他业务：在事务组中注册子事务
+          3.通知大家统一提交
+      5.Tcc
+        业务补偿机制，日志方式进行业务补偿
+          try {
+            a+100
+            b-100
+          } catch {
+            a-100
+            b+100
+          }
+          try -- 业务处理
+          confirm -- 确认
+          cancel -- 回滚
+      6.最终消息一致性
+        MQ
+    8.分布式事务处理原理
+      1.jdbc-connection代理
+        对jdbc-connection连接进行代理模式：实现2pc的方式数据一致性解决方案
+      2.逆向SQL
+        
+      3.tcc方案
+        业务补偿机制：-- 下单（状态），库存（预处理），出库（状态），积分（预处理）
+        日志补偿机制：try confirm cancel
+          
+      4.消息中间件
+        
+    9.数据一致性
+      
+  13.
+
+
+
+
